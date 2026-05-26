@@ -25,7 +25,6 @@ frontend/playwright.config.js
 
 # 3. Build & Temp (Netlify Local Dev)
 .dist/
-.git/
 .github/
 .netlify/
 .security/

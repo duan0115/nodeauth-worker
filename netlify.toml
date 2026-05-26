@@ -27,6 +27,7 @@
   ]
 
 [functions."api"]
+  timeout = 60
 
 [functions."cron"]
   schedule = "0 2 * * *"
