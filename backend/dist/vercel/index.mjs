@@ -11,11 +11,20 @@ var __require = /* @__PURE__ */ ((x2) => typeof require !== "undefined" ? requir
   if (typeof require !== "undefined") return require.apply(this, arguments);
   throw Error('Dynamic require of "' + x2 + '" is not supported');
 });
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+var __esm = (fn, res, err) => function __init() {
+  if (err) throw err[0];
+  try {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  } catch (e2) {
+    throw err = [e2], e2;
+  }
 };
 var __commonJS = (cb, mod2) => function __require2() {
-  return mod2 || (0, cb[__getOwnPropNames(cb)[0]])((mod2 = { exports: {} }).exports, mod2), mod2.exports;
+  try {
+    return mod2 || (0, cb[__getOwnPropNames(cb)[0]])((mod2 = { exports: {} }).exports, mod2), mod2.exports;
+  } catch (e2) {
+    throw mod2 = 0, e2;
+  }
 };
 var __export = (target, all) => {
   for (var name in all)
@@ -1029,7 +1038,7 @@ var init_tslib_es6 = __esm({
       };
       return __assign.apply(this, arguments);
     };
-    __createBinding = Object.create ? function(o, m2, k, k2) {
+    __createBinding = Object.create ? (function(o, m2, k, k2) {
       if (k2 === void 0) k2 = k;
       var desc2 = Object.getOwnPropertyDescriptor(m2, k);
       if (!desc2 || ("get" in desc2 ? !m2.__esModule : desc2.writable || desc2.configurable)) {
@@ -1038,13 +1047,13 @@ var init_tslib_es6 = __esm({
         } };
       }
       Object.defineProperty(o, k2, desc2);
-    } : function(o, m2, k, k2) {
+    }) : (function(o, m2, k, k2) {
       if (k2 === void 0) k2 = k;
       o[k2] = m2[k];
-    };
-    __setModuleDefault = Object.create ? function(o, v) {
+    });
+    __setModuleDefault = Object.create ? (function(o, v) {
       Object.defineProperty(o, "default", { enumerable: true, value: v });
-    } : function(o, v) {
+    }) : function(o, v) {
       o["default"] = v;
     };
     ownKeys = function(o) {
@@ -7938,7 +7947,7 @@ var require_Reflect = __commonJS({
         var _Map = typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
         var _Set = typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
         var _WeakMap = typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
-        var registrySymbol = supportsSymbol ? Symbol.for("@reflect-metadata:registry") : void 0;
+        var registrySymbol = supportsSymbol ? /* @__PURE__ */ Symbol.for("@reflect-metadata:registry") : void 0;
         var metadataRegistry = GetOrCreateMetadataRegistry();
         var metadataProvider = CreateMetadataProvider(metadataRegistry);
         function decorate(decorators, target, propertyKey, attributes) {
@@ -8637,7 +8646,7 @@ var require_Reflect = __commonJS({
           var arraySentinel = [];
           var MapIterator = (
             /** @class */
-            function() {
+            (function() {
               function MapIterator2(keys, values, selector) {
                 this._index = 0;
                 this._keys = keys;
@@ -8682,11 +8691,11 @@ var require_Reflect = __commonJS({
                 return { value, done: true };
               };
               return MapIterator2;
-            }()
+            })()
           );
           var Map2 = (
             /** @class */
-            function() {
+            (function() {
               function Map3() {
                 this._keys = [];
                 this._values = [];
@@ -8785,7 +8794,7 @@ var require_Reflect = __commonJS({
                 return this._cacheIndex;
               };
               return Map3;
-            }()
+            })()
           );
           return Map2;
           function getKey(key, _) {
@@ -8801,7 +8810,7 @@ var require_Reflect = __commonJS({
         function CreateSetPolyfill() {
           var Set2 = (
             /** @class */
-            function() {
+            (function() {
               function Set3() {
                 this._map = new _Map();
               }
@@ -8840,7 +8849,7 @@ var require_Reflect = __commonJS({
                 return this.keys();
               };
               return Set3;
-            }()
+            })()
           );
           return Set2;
         }
@@ -8850,7 +8859,7 @@ var require_Reflect = __commonJS({
           var rootKey = CreateUniqueKey();
           return (
             /** @class */
-            function() {
+            (function() {
               function WeakMap2() {
                 this._key = CreateUniqueKey();
               }
@@ -8891,7 +8900,7 @@ var require_Reflect = __commonJS({
                 this._key = CreateUniqueKey();
               };
               return WeakMap2;
-            }()
+            })()
           );
           function CreateUniqueKey() {
             var key;
@@ -13754,8 +13763,8 @@ var require_x509_cjs = __commonJS({
       tsyringe.injectable()
     ], exports2.EcAlgorithm);
     tsyringe.container.registerSingleton(diAlgorithm, exports2.EcAlgorithm);
-    var NAME3 = Symbol("name");
-    var VALUE = Symbol("value");
+    var NAME3 = /* @__PURE__ */ Symbol("name");
+    var VALUE = /* @__PURE__ */ Symbol("value");
     var TextObject = class {
       constructor(name, items = {}, value = "") {
         this[NAME3] = name;
@@ -18151,7 +18160,7 @@ var init_size = __esm({
 var version3;
 var init_version2 = __esm({
   "node_modules/viem/_esm/errors/version.js"() {
-    version3 = "2.49.3";
+    version3 = "2.52.2";
   }
 });
 
@@ -24583,6 +24592,24 @@ var init_assertRequest = __esm({
   }
 });
 
+// node_modules/viem/_esm/utils/block/formatBlockParameter.js
+function formatBlockParameter(parameters) {
+  const { blockHash, blockNumber, blockTag, requireCanonical } = parameters;
+  if (requireCanonical !== void 0 && !blockHash)
+    throw new BaseError2("`requireCanonical` can only be provided when `blockHash` is set.");
+  if (blockHash)
+    return requireCanonical ? { blockHash, requireCanonical } : { blockHash };
+  if (typeof blockNumber === "bigint")
+    return numberToHex(blockNumber);
+  return blockTag ?? "latest";
+}
+var init_formatBlockParameter = __esm({
+  "node_modules/viem/_esm/utils/block/formatBlockParameter.js"() {
+    init_base();
+    init_toHex();
+  }
+});
+
 // node_modules/viem/_esm/utils/address/isAddressEqual.js
 function isAddressEqual(a, b) {
   if (!isAddress(a, { strict: false }))
@@ -26274,7 +26301,7 @@ var init_ccip2 = __esm({
 
 // node_modules/viem/_esm/actions/public/call.js
 async function call(client, args) {
-  const { account: account_ = client.account, authorizationList, batch = Boolean(client.batch?.multicall), blockNumber, blockTag = client.experimental_blockTag ?? "latest", accessList, blobs, blockOverrides, code, data: data_, factory, factoryData, gas, gasPrice, maxFeePerBlobGas, maxFeePerGas, maxPriorityFeePerGas, nonce, requestOptions, to, value, stateOverride, ...rest } = args;
+  const { account: account_ = client.account, authorizationList, batch = Boolean(client.batch?.multicall), blockHash, blockNumber, blockTag = client.experimental_blockTag ?? "latest", requireCanonical, accessList, blobs, blockOverrides, code, data: data_, factory, factoryData, gas, gasPrice, maxFeePerBlobGas, maxFeePerGas, maxPriorityFeePerGas, nonce, requestOptions, to, value, stateOverride, ...rest } = args;
   const account = account_ ? parseAccount(account_) : void 0;
   if (code && (factory || factoryData))
     throw new BaseError2("Cannot provide both `code` & `factory`/`factoryData` as parameters.");
@@ -26300,8 +26327,12 @@ async function call(client, args) {
   })();
   try {
     assertRequest(args);
-    const blockNumberHex = typeof blockNumber === "bigint" ? numberToHex(blockNumber) : void 0;
-    const block = blockNumberHex || blockTag;
+    const block = formatBlockParameter({
+      blockHash,
+      blockNumber,
+      blockTag,
+      requireCanonical
+    });
     const rpcBlockOverrides = blockOverrides ? toRpc2(blockOverrides) : void 0;
     const rpcStateOverride = serializeStateOverride(stateOverride);
     const chainFormat = client.chain?.formatters?.transactionRequest?.format;
@@ -26323,14 +26354,24 @@ async function call(client, args) {
       to: deploylessCall ? void 0 : to,
       value
     }, "call");
-    if (batch && shouldPerformMulticall({ request: request2 }) && !rpcStateOverride && !rpcBlockOverrides) {
+    if (batch && shouldPerformMulticall({ request: request2 }) && !rpcBlockOverrides && blockHash === void 0) {
       try {
-        return await scheduleMulticall(client, {
-          ...request2,
+        const { deployless = false } = typeof client.batch?.multicall === "object" ? client.batch.multicall : {};
+        const multicallAddress = getMulticallAddress(client, {
           blockNumber,
-          blockTag,
-          requestOptions
+          deployless
         });
+        if (!multicallAddress || !hasStateOverrideForAddress(rpcStateOverride, multicallAddress))
+          return await scheduleMulticall(client, {
+            ...request2,
+            blockHash,
+            blockNumber,
+            blockTag,
+            multicallAddress,
+            requestOptions,
+            requireCanonical,
+            rpcStateOverride
+          });
       } catch (err) {
         if (!(err instanceof ClientChainNotConfiguredError) && !(err instanceof ChainDoesNotSupportContract))
           throw err;
@@ -26400,25 +26441,21 @@ function getRequestOptionsId(requestOptions) {
 }
 async function scheduleMulticall(client, args) {
   const { batchSize = 1024, deployless = false, wait: wait2 = 0 } = typeof client.batch?.multicall === "object" ? client.batch.multicall : {};
-  const { blockNumber, blockTag = client.experimental_blockTag ?? "latest", data, requestOptions, to } = args;
-  const multicallAddress = (() => {
-    if (deployless)
-      return null;
-    if (args.multicallAddress)
-      return args.multicallAddress;
-    if (client.chain) {
-      return getChainContractAddress({
-        blockNumber,
-        chain: client.chain,
-        contract: "multicall3"
-      });
-    }
-    throw new ClientChainNotConfiguredError();
-  })();
-  const blockNumberHex = typeof blockNumber === "bigint" ? numberToHex(blockNumber) : void 0;
-  const block = blockNumberHex || blockTag;
+  const { blockHash, blockNumber, blockTag = client.experimental_blockTag ?? "latest", requireCanonical, data, multicallAddress: multicallAddress_, requestOptions, rpcStateOverride, to } = args;
+  const multicallAddress = multicallAddress_ !== void 0 ? multicallAddress_ : getMulticallAddress(client, {
+    blockNumber,
+    deployless
+  });
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
+  const blockId = typeof block === "string" ? block : JSON.stringify(block);
+  const stateOverrideKey = rpcStateOverride ? `.${JSON.stringify(rpcStateOverride)}` : "";
   const { schedule } = createBatchScheduler({
-    id: `${client.uid}.${block}.${getRequestOptionsId(requestOptions)}`,
+    id: `${client.uid}.${blockId}.${getRequestOptionsId(requestOptions)}${stateOverrideKey}`,
     wait: wait2,
     shouldSplitBatch(args2) {
       const size5 = args2.reduce((size6, { data: data2 }) => size6 + (data2.length - 2), 0);
@@ -26435,19 +26472,17 @@ async function scheduleMulticall(client, args) {
         args: [calls],
         functionName: "aggregate3"
       });
+      const multicallRequest = {
+        ...multicallAddress === null ? {
+          data: toDeploylessCallViaBytecodeData({
+            code: multicall3Bytecode,
+            data: calldata
+          })
+        } : { to: multicallAddress, data: calldata }
+      };
       const data2 = await client.request({
         method: "eth_call",
-        params: [
-          {
-            ...multicallAddress === null ? {
-              data: toDeploylessCallViaBytecodeData({
-                code: multicall3Bytecode,
-                data: calldata
-              })
-            } : { to: multicallAddress, data: calldata }
-          },
-          block
-        ]
+        params: rpcStateOverride ? [multicallRequest, block, rpcStateOverride] : [multicallRequest, block]
       }, requestOptions);
       return decodeFunctionResult({
         abi: multicall3Abi,
@@ -26463,6 +26498,23 @@ async function scheduleMulticall(client, args) {
   if (returnData === "0x")
     return { data: void 0 };
   return { data: returnData };
+}
+function getMulticallAddress(client, parameters) {
+  const { blockNumber, deployless } = parameters;
+  if (deployless)
+    return null;
+  if (client.chain)
+    return getChainContractAddress({
+      blockNumber,
+      chain: client.chain,
+      contract: "multicall3"
+    });
+  throw new ClientChainNotConfiguredError();
+}
+function hasStateOverrideForAddress(rpcStateOverride, address) {
+  if (!rpcStateOverride)
+    return false;
+  return Object.keys(rpcStateOverride).some((stateOverrideAddress) => isAddressEqual(stateOverrideAddress, address));
 }
 function toDeploylessCallViaBytecodeData(parameters) {
   const { code, data } = parameters;
@@ -26502,8 +26554,9 @@ var init_call = __esm({
     init_decodeFunctionResult();
     init_encodeDeployData();
     init_encodeFunctionData();
+    init_isAddressEqual();
+    init_formatBlockParameter();
     init_getChainContractAddress();
-    init_toHex();
     init_getCallError();
     init_extract();
     init_transactionRequest();
@@ -27758,7 +27811,7 @@ var require_ponyfill_es2018 = __commonJS({
   "node_modules/web-streams-polyfill/dist/ponyfill.es2018.js"(exports2, module) {
     (function(global2, factory) {
       typeof exports2 === "object" && typeof module !== "undefined" ? factory(exports2) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2.WebStreamsPolyfill = {}));
-    })(exports2, function(exports3) {
+    })(exports2, (function(exports3) {
       "use strict";
       function noop2() {
         return void 0;
@@ -27918,11 +27971,11 @@ var require_ponyfill_es2018 = __commonJS({
           return front._elements[cursor];
         }
       }
-      const AbortSteps = Symbol("[[AbortSteps]]");
-      const ErrorSteps = Symbol("[[ErrorSteps]]");
-      const CancelSteps = Symbol("[[CancelSteps]]");
-      const PullSteps = Symbol("[[PullSteps]]");
-      const ReleaseSteps = Symbol("[[ReleaseSteps]]");
+      const AbortSteps = /* @__PURE__ */ Symbol("[[AbortSteps]]");
+      const ErrorSteps = /* @__PURE__ */ Symbol("[[ErrorSteps]]");
+      const CancelSteps = /* @__PURE__ */ Symbol("[[CancelSteps]]");
+      const PullSteps = /* @__PURE__ */ Symbol("[[PullSteps]]");
+      const ReleaseSteps = /* @__PURE__ */ Symbol("[[ReleaseSteps]]");
       function ReadableStreamReaderGenericInitialize(reader, stream) {
         reader._ownerReadableStream = stream;
         stream._reader = reader;
@@ -28363,9 +28416,9 @@ var require_ponyfill_es2018 = __commonJS({
         const syncIterable = {
           [Symbol.iterator]: () => syncIteratorRecord.iterator
         };
-        const asyncIterator = async function* () {
+        const asyncIterator = (async function* () {
           return yield* syncIterable;
-        }();
+        })();
         const nextMethod = asyncIterator.next;
         return { iterator: asyncIterator, nextMethod, done: false };
       }
@@ -32024,7 +32077,7 @@ var require_ponyfill_es2018 = __commonJS({
       exports3.WritableStream = WritableStream;
       exports3.WritableStreamDefaultController = WritableStreamDefaultController;
       exports3.WritableStreamDefaultWriter = WritableStreamDefaultWriter;
-    });
+    }));
   }
 });
 
@@ -32913,7 +32966,7 @@ var require_nested_property = __commonJS({
     }
     var ARRAY_WILDCARD = "+";
     var PATH_DELIMITER = ".";
-    var ObjectPrototypeMutationError = /* @__PURE__ */ function(_Error) {
+    var ObjectPrototypeMutationError = /* @__PURE__ */ (function(_Error) {
       _inherits(ObjectPrototypeMutationError2, _Error);
       function ObjectPrototypeMutationError2(params) {
         var _this;
@@ -32923,7 +32976,7 @@ var require_nested_property = __commonJS({
         return _this;
       }
       return ObjectPrototypeMutationError2;
-    }(_wrapNativeSuper(Error));
+    })(_wrapNativeSuper(Error));
     module.exports = {
       set: setNestedProperty,
       get: getNestedProperty,
@@ -33330,12 +33383,12 @@ var require_package = __commonJS({
   "node_modules/nodemailer/package.json"(exports2, module) {
     module.exports = {
       name: "nodemailer",
-      version: "8.0.5",
+      version: "8.0.11",
       description: "Easy as cake e-mail sending from your Node.js applications",
       main: "lib/nodemailer.js",
       scripts: {
-        test: "node --test --test-concurrency=1 test/**/*.test.js test/**/*-test.js",
-        "test:coverage": "c8 node --test --test-concurrency=1 test/**/*.test.js test/**/*-test.js",
+        test: "node --test --test-concurrency=1 $(find test \\( -name '*-test.js' -o -name '*.test.js' \\))",
+        "test:coverage": "c8 node --test --test-concurrency=1 $(find test \\( -name '*-test.js' -o -name '*.test.js' \\))",
         format: 'prettier --write "**/*.{js,json,md}"',
         "format:check": 'prettier --check "**/*.{js,json,md}"',
         lint: "eslint .",
@@ -33357,20 +33410,19 @@ var require_package = __commonJS({
       },
       homepage: "https://nodemailer.com/",
       devDependencies: {
-        "@aws-sdk/client-sesv2": "3.1025.0",
+        "@aws-sdk/client-sesv2": "3.1065.0",
         bunyan: "1.8.15",
         c8: "11.0.0",
-        eslint: "10.2.0",
+        eslint: "10.4.1",
         "eslint-config-prettier": "10.1.8",
-        globals: "17.4.0",
+        globals: "17.6.0",
         libbase64: "1.3.0",
-        libmime: "5.3.7",
+        libmime: "5.3.8",
         libqp: "2.1.1",
-        "nodemailer-ntlm-auth": "1.0.4",
-        prettier: "3.8.1",
+        prettier: "3.8.4",
         proxy: "1.0.2",
         "proxy-test-server": "1.0.0",
-        "smtp-server": "3.18.3"
+        "smtp-server": "3.18.5"
       },
       engines: {
         node: ">=6.0.0"
@@ -33665,6 +33717,7 @@ var require_shared = __commonJS({
     var util = __require("util");
     var fs3 = __require("fs");
     var nmfetch = require_fetch();
+    var errors = require_errors2();
     var dns = __require("dns");
     var net = __require("net");
     var os = __require("os");
@@ -33945,7 +33998,13 @@ var require_shared = __commonJS({
     module.exports._logFunc = (logger3, level, defaults2, data, message, ...args) => {
       const entry = Object.assign({}, defaults2 || {}, data || {});
       delete entry.level;
-      logger3[level](entry, message, ...args);
+      let logLevel = level;
+      if (typeof logger3[logLevel] !== "function") {
+        logLevel = ["info", "debug", "log", "trace", "warn", "error"].find((name) => typeof logger3[name] === "function");
+      }
+      if (logLevel) {
+        logger3[logLevel](entry, message, ...args);
+      }
     };
     module.exports.getLogger = (options, defaults2) => {
       options = options || {};
@@ -34030,13 +34089,22 @@ var require_shared = __commonJS({
         params
       };
     };
-    module.exports.resolveContent = (data, key, callback) => {
+    module.exports.resolveContent = (data, key, options, callback) => {
+      if (!callback && typeof options === "function") {
+        callback = options;
+        options = false;
+      }
+      options = options || {};
       let promise;
       if (!callback) {
         promise = new Promise((resolve2, reject) => {
           callback = module.exports.callbackPromise(resolve2, reject);
         });
       }
+      resolveContentValue(data, key, options, callback);
+      return promise;
+    };
+    function resolveContentValue(data, key, options, callback) {
       let content = data && data[key] && data[key].content || data[key];
       const encoding = (typeof data[key] === "object" && data[key].encoding || "utf8").toString().toLowerCase().replace(/[-_\s]/g, "");
       if (!content) {
@@ -34056,14 +34124,25 @@ var require_shared = __commonJS({
             callback(null, value);
           });
         } else if (/^https?:\/\//i.test(content.path || content.href)) {
+          if (options.disableUrlAccess) {
+            return setImmediate(() => {
+              const err = new Error("Url access rejected for " + (content.path || content.href));
+              err.code = errors.EURLACCESS;
+              callback(err);
+            });
+          }
           return resolveStream(nmfetch(content.path || content.href), callback);
         } else if (/^data:/i.test(content.path || content.href)) {
           const parsedDataUri = module.exports.parseDataURI(content.path || content.href);
-          if (!parsedDataUri || !parsedDataUri.data) {
-            return callback(null, Buffer.from(0));
-          }
-          return callback(null, parsedDataUri.data);
+          return callback(null, parsedDataUri && parsedDataUri.data ? parsedDataUri.data : Buffer.alloc(0));
         } else if (content.path) {
+          if (options.disableFileAccess) {
+            return setImmediate(() => {
+              const err = new Error("File access rejected for " + content.path);
+              err.code = errors.EFILEACCESS;
+              callback(err);
+            });
+          }
           return resolveStream(fs3.createReadStream(content.path), callback);
         }
       }
@@ -34071,8 +34150,7 @@ var require_shared = __commonJS({
         content = Buffer.from(data[key].content, encoding);
       }
       setImmediate(() => callback(null, content));
-      return promise;
-    };
+    }
     module.exports.assign = function() {
       const args = Array.from(arguments);
       const target = args.shift() || {};
@@ -36257,7 +36335,7 @@ var require_mime_types = __commonJS({
         if (!mimeType) {
           return defaultExtension;
         }
-        const parts = (mimeType || "").toLowerCase().trim().split("/");
+        const parts = mimeType.toLowerCase().trim().split("/");
         const rootType = parts.shift().trim();
         const subType = parts.join("/").trim();
         if (mimeTypes.has(rootType + "/" + subType)) {
@@ -36542,11 +36620,11 @@ var require_base642 = __commonJS({
       const chunkLength = lineLength * 1024;
       const wrapRegex = new RegExp(".{" + lineLength + "}", "g");
       while (pos < str.length) {
-        const wrappedLines = str.substr(pos, chunkLength).replace(wrapRegex, "$&\r\n");
+        const wrappedLines = str.substr(pos, chunkLength).replace(wrapRegex, "$&\r\n").trim();
         result.push(wrappedLines);
         pos += chunkLength;
       }
-      return result.join("");
+      return result.join("\r\n").trim();
     }
     var Encoder = class extends Transform {
       constructor(options) {
@@ -36585,15 +36663,12 @@ var require_base642 = __commonJS({
           if (lastLF < 0) {
             this._curLine = b64;
             b64 = "";
+          } else if (lastLF === b64.length - 1) {
+            this._curLine = "";
           } else {
             this._curLine = b64.substring(lastLF + 1);
             b64 = b64.substring(0, lastLF + 1);
-            if (b64 && !b64.endsWith("\r\n")) {
-              b64 += "\r\n";
-            }
           }
-        } else {
-          this._curLine = "";
         }
         if (b64) {
           this.outputBytes += b64.length;
@@ -36606,6 +36681,7 @@ var require_base642 = __commonJS({
           this._curLine += encode5(this._remainingBytes);
         }
         if (this._curLine) {
+          this._curLine = wrap3(this._curLine, this.options.lineLength);
           this.outputBytes += this._curLine.length;
           this.push(Buffer.from(this._curLine, "ascii"));
           this._curLine = "";
@@ -38577,9 +38653,13 @@ var require_mime_node = __commonJS({
         }
         let user = address.substr(0, lastAt);
         const domain = address.substr(lastAt + 1);
-        let encodedDomain;
+        let encodedDomain = domain;
         try {
-          encodedDomain = punycode.toASCII(domain.toLowerCase());
+          if (/[\x80-\uFFFF]/.test(user)) {
+            encodedDomain = punycode.toUnicode(domain.toLowerCase());
+          } else {
+            encodedDomain = punycode.toASCII(domain.toLowerCase());
+          }
         } catch (_err) {
         }
         if (user.indexOf(" ") >= 0) {
@@ -38719,7 +38799,7 @@ var require_mail_composer = __commonJS({
        * @returns {Object} An object of arrays (`related` and `attached`)
        */
       getAttachments(findRelated) {
-        let icalEvent, eventObject;
+        let eventObject;
         const attachments = [].concat(this.mail.attachments || []).map((attachment, i2) => {
           if (/^data:/i.test(attachment.path || attachment.href)) {
             attachment = this._processDataUrl(attachment);
@@ -38779,14 +38859,7 @@ var require_mail_composer = __commonJS({
           return data;
         });
         if (this.mail.icalEvent) {
-          if (typeof this.mail.icalEvent === "object" && (this.mail.icalEvent.content || this.mail.icalEvent.path || this.mail.icalEvent.href || this.mail.icalEvent.raw)) {
-            icalEvent = this.mail.icalEvent;
-          } else {
-            icalEvent = {
-              content: this.mail.icalEvent
-            };
-          }
-          eventObject = Object.assign({}, icalEvent);
+          eventObject = Object.assign({}, this._getIcalEvent());
           eventObject.contentType = "application/ics";
           if (!eventObject.headers) {
             eventObject.headers = {};
@@ -38807,13 +38880,60 @@ var require_mail_composer = __commonJS({
         };
       }
       /**
+       * Returns the icalEvent value with `path`/`href`/data uri input normalized into
+       * a `content` entry, the same way as for regular attachments. The same event is
+       * included twice (as a text/calendar alternative and as an application/ics
+       * attachment), so the shared content object is marked to be resolved just once
+       * and the buffered result is reused by the second node.
+       *
+       * @returns {Object} Normalized icalEvent data
+       */
+      _getIcalEvent() {
+        if (!this._icalEvent) {
+          let icalEvent;
+          if (typeof this.mail.icalEvent === "object" && (this.mail.icalEvent.content || this.mail.icalEvent.path || this.mail.icalEvent.href || this.mail.icalEvent.raw)) {
+            icalEvent = Object.assign({}, this.mail.icalEvent);
+          } else {
+            icalEvent = {
+              content: this.mail.icalEvent
+            };
+          }
+          if (/^data:/i.test(icalEvent.path || icalEvent.href)) {
+            icalEvent = this._processDataUrl(icalEvent);
+          }
+          if (/^https?:\/\//i.test(icalEvent.path)) {
+            icalEvent.href = icalEvent.path;
+            icalEvent.path = void 0;
+          }
+          if (!icalEvent.raw) {
+            if (icalEvent.path) {
+              icalEvent.content = {
+                path: icalEvent.path
+              };
+              icalEvent.path = void 0;
+            } else if (icalEvent.href) {
+              icalEvent.content = {
+                href: icalEvent.href,
+                httpHeaders: icalEvent.httpHeaders
+              };
+              icalEvent.href = void 0;
+            }
+          }
+          if (icalEvent.content && typeof icalEvent.content === "object") {
+            icalEvent.content._resolve = true;
+          }
+          this._icalEvent = icalEvent;
+        }
+        return this._icalEvent;
+      }
+      /**
        * List alternatives. Resulting objects can be used as input for MimeNode nodes
        *
        * @returns {Array} An array of alternative elements. Includes the `text` and `html` values as well
        */
       getAlternatives() {
         const alternatives = [];
-        let text4, html, watchHtml, amp, icalEvent, eventObject;
+        let text4, html, watchHtml, amp, eventObject;
         if (this.mail.text) {
           if (typeof this.mail.text === "object" && (this.mail.text.content || this.mail.text.path || this.mail.text.href || this.mail.text.raw)) {
             text4 = this.mail.text;
@@ -38845,17 +38965,7 @@ var require_mail_composer = __commonJS({
           amp.contentType = "text/x-amp-html; charset=utf-8";
         }
         if (this.mail.icalEvent) {
-          if (typeof this.mail.icalEvent === "object" && (this.mail.icalEvent.content || this.mail.icalEvent.path || this.mail.icalEvent.href || this.mail.icalEvent.raw)) {
-            icalEvent = this.mail.icalEvent;
-          } else {
-            icalEvent = {
-              content: this.mail.icalEvent
-            };
-          }
-          eventObject = Object.assign({}, icalEvent);
-          if (eventObject.content && typeof eventObject.content === "object") {
-            eventObject.content._resolve = true;
-          }
+          eventObject = Object.assign({}, this._getIcalEvent());
           eventObject.filename = false;
           eventObject.contentType = "text/calendar; charset=utf-8; method=" + (eventObject.method || "PUBLISH").toString().trim().toUpperCase();
           if (!eventObject.headers) {
@@ -39808,23 +39918,27 @@ var require_mail_message = __commonJS({
           if (!args[0] || !args[0][args[1]]) {
             return resolveNext();
           }
-          shared.resolveContent(...args, (err, value) => {
-            if (err) {
-              return callback(err);
+          shared.resolveContent(
+            ...args,
+            { disableFileAccess: this.data.disableFileAccess, disableUrlAccess: this.data.disableUrlAccess },
+            (err, value) => {
+              if (err) {
+                return callback(err);
+              }
+              const node = {
+                content: value
+              };
+              if (args[0][args[1]] && typeof args[0][args[1]] === "object" && !Buffer.isBuffer(args[0][args[1]])) {
+                Object.keys(args[0][args[1]]).forEach((key) => {
+                  if (!(key in node) && !["content", "path", "href", "raw"].includes(key)) {
+                    node[key] = args[0][args[1]][key];
+                  }
+                });
+              }
+              args[0][args[1]] = node;
+              resolveNext();
             }
-            const node = {
-              content: value
-            };
-            if (args[0][args[1]] && typeof args[0][args[1]] === "object" && !Buffer.isBuffer(args[0][args[1]])) {
-              Object.keys(args[0][args[1]]).forEach((key) => {
-                if (!(key in node) && !["content", "path", "href", "raw"].includes(key)) {
-                  node[key] = args[0][args[1]][key];
-                }
-              });
-            }
-            args[0][args[1]] = node;
-            resolveNext();
-          });
+          );
         };
         setImmediate(() => resolveNext());
       }
@@ -39940,15 +40054,15 @@ var require_mail_message = __commonJS({
               }
               if (value2 && value2.url) {
                 if (key.toLowerCase().trim() === "id") {
-                  let comment2 = value2.comment || "";
+                  let comment2 = (value2.comment || "").toString().replace(/\r?\n|\r/g, " ");
                   if (mimeFuncs.isPlainText(comment2)) {
                     comment2 = '"' + comment2 + '"';
                   } else {
                     comment2 = mimeFuncs.encodeWord(comment2);
                   }
-                  return (value2.comment ? comment2 + " " : "") + this._formatListUrl(value2.url).replace(/^<[^:]+\/{,2}/, "");
+                  return (value2.comment ? comment2 + " " : "") + this._formatListUrl(value2.url).replace(/^<[^:]+:\/{0,2}/, "<");
                 }
-                let comment = value2.comment || "";
+                let comment = (value2.comment || "").toString().replace(/\r?\n|\r/g, " ");
                 if (!mimeFuncs.isPlainText(comment)) {
                   comment = mimeFuncs.encodeWord(comment);
                 }
@@ -40322,29 +40436,37 @@ var require_mailer = __commonJS({
         if (!this.options.attachDataUrls && !mail.data.attachDataUrls || !mail.data.html) {
           return callback();
         }
-        mail.resolveContent(mail.data, "html", (err, html) => {
-          if (err) {
-            return callback(err);
+        mail.resolveContent(
+          mail.data,
+          "html",
+          { disableFileAccess: mail.data.disableFileAccess, disableUrlAccess: mail.data.disableUrlAccess },
+          (err, html) => {
+            if (err) {
+              return callback(err);
+            }
+            let cidCounter = 0;
+            html = (html || "").toString().replace(
+              /(<img\b[^<>]{0,1024} src\s{0,20}=[\s"']{0,20})(data:([^;]+);[^"'>\s]+)/gi,
+              (match3, prefix, dataUri, mimeType) => {
+                const cid = crypto3.randomBytes(10).toString("hex") + "@localhost";
+                if (!mail.data.attachments) {
+                  mail.data.attachments = [];
+                }
+                if (!Array.isArray(mail.data.attachments)) {
+                  mail.data.attachments = [].concat(mail.data.attachments || []);
+                }
+                mail.data.attachments.push({
+                  path: dataUri,
+                  cid,
+                  filename: "image-" + ++cidCounter + "." + mimeTypes.detectExtension(mimeType)
+                });
+                return prefix + "cid:" + cid;
+              }
+            );
+            mail.data.html = html;
+            callback();
           }
-          let cidCounter = 0;
-          html = (html || "").toString().replace(/(<img\b[^<>]{0,1024} src\s{0,20}=[\s"']{0,20})(data:([^;]+);[^"'>\s]+)/gi, (match3, prefix, dataUri, mimeType) => {
-            const cid = crypto3.randomBytes(10).toString("hex") + "@localhost";
-            if (!mail.data.attachments) {
-              mail.data.attachments = [];
-            }
-            if (!Array.isArray(mail.data.attachments)) {
-              mail.data.attachments = [].concat(mail.data.attachments || []);
-            }
-            mail.data.attachments.push({
-              path: dataUri,
-              cid,
-              filename: "image-" + ++cidCounter + "." + mimeTypes.detectExtension(mimeType)
-            });
-            return prefix + "cid:" + cid;
-          });
-          mail.data.html = html;
-          callback();
-        });
+        );
       }
       set(key, value) {
         return this.meta.set(key, value);
@@ -40516,6 +40638,7 @@ var require_smtp_connection = __commonJS({
         this._connectionTimeout = false;
         this._destroyed = false;
         this._closing = false;
+        this._currentDataStream = false;
         this._onSocketData = (chunk) => this._onData(chunk);
         this._onSocketError = (error) => this._onError(error, "ESOCKET", false, "CONN");
         this._onSocketClose = () => this._onClose();
@@ -40724,6 +40847,13 @@ var require_smtp_connection = __commonJS({
           closeMethod
         );
         const socket = this._socket && this._socket.socket || this._socket;
+        if (this._currentDataStream) {
+          try {
+            this._currentDataStream.unpipe(this._socket);
+          } catch (_E) {
+          }
+          this._currentDataStream = false;
+        }
         if (socket && !socket.destroyed) {
           try {
             socket.setTimeout(0);
@@ -41009,7 +41139,7 @@ var require_smtp_connection = __commonJS({
         if (this._destroyed || !chunk || !chunk.length) {
           return;
         }
-        let data = (chunk || "").toString("binary");
+        let data = chunk.toString("binary");
         let lines = (this._remainder + data).split(/\r?\n/);
         let lastline;
         this._remainder = lines.pop();
@@ -41117,7 +41247,7 @@ var require_smtp_connection = __commonJS({
        */
       _onEnd() {
         if (this._socket && !this._socket.destroyed) {
-          this._socket.destroy();
+          this._socket.end();
         }
       }
       /**
@@ -41158,18 +41288,22 @@ var require_smtp_connection = __commonJS({
         if (this.servername && !opts.servername) {
           opts.servername = this.servername;
         }
+        const removePlainSocketListeners = () => {
+          socketPlain.removeListener("close", this._onSocketClose);
+          socketPlain.removeListener("end", this._onSocketEnd);
+          socketPlain.removeListener("error", this._onSocketError);
+        };
         this.upgrading = true;
         try {
           this._socket = tls.connect(opts, () => {
             this.secure = true;
             this.upgrading = false;
             this._socket.on("data", this._onSocketData);
-            socketPlain.removeListener("close", this._onSocketClose);
-            socketPlain.removeListener("end", this._onSocketEnd);
-            socketPlain.removeListener("error", this._onSocketError);
+            removePlainSocketListeners();
             return callback(null, true);
           });
         } catch (err) {
+          removePlainSocketListeners();
           return callback(err);
         }
         this._socket.on("error", this._onSocketError);
@@ -41385,6 +41519,7 @@ var require_smtp_connection = __commonJS({
             this._actionSMTPStream(str, callback);
           });
         }
+        this._currentDataStream = dataStream;
         dataStream.pipe(this._socket, {
           end: false
         });
@@ -41404,6 +41539,9 @@ var require_smtp_connection = __commonJS({
           dataStream.pipe(logStream);
         }
         dataStream.once("end", () => {
+          if (this._currentDataStream === dataStream) {
+            this._currentDataStream = false;
+          }
           this.logger.info(
             {
               tnx: "message",
@@ -42204,12 +42342,16 @@ var require_xoauth2 = __commonJS({
         let returned = false;
         const chunks = [];
         let chunklen = 0;
-        const req = nmfetch(url, {
+        const fetchOptions = {
           method: "post",
           headers: params.customHeaders,
           body: payload,
           allowErrorResponse: true
-        });
+        };
+        if (/^https:/i.test(url)) {
+          fetchOptions.tls = Object.assign({ rejectUnauthorized: true }, params.tls || {});
+        }
+        const req = nmfetch(url, fetchOptions);
         req.on("readable", () => {
           let chunk;
           while ((chunk = req.read()) !== null) {
@@ -43656,12 +43798,15 @@ var require_smtp_transport = __commonJS({
       }
       getAuth(authOpts) {
         if (!authOpts) {
+          if (this.auth && this.auth.oauth2 && this.mailer) {
+            this.auth.oauth2.provisionCallback = this.mailer.get("oauth2_provision_cb") || this.auth.oauth2.provisionCallback;
+          }
           return this.auth;
         }
         const authData = Object.assign(
           {},
           this.options.auth && typeof this.options.auth === "object" ? this.options.auth : {},
-          authOpts && typeof authOpts === "object" ? authOpts : {}
+          typeof authOpts === "object" ? authOpts : {}
         );
         if (Object.keys(authData).length === 0) {
           return false;
@@ -43727,11 +43872,19 @@ var require_smtp_transport = __commonJS({
             options = Object.assign(shared.assign(false, options), socketOptions);
           }
           const connection = new SMTPConnection(options);
+          let perCallAuth;
+          const cleanupPerCallAuth = () => {
+            if (perCallAuth && perCallAuth !== this.auth && perCallAuth.oauth2) {
+              perCallAuth.oauth2.removeAllListeners();
+            }
+            perCallAuth = null;
+          };
           connection.once("error", (err2) => {
             if (returned) {
               return;
             }
             returned = true;
+            cleanupPerCallAuth();
             connection.close();
             return callback(err2);
           });
@@ -43744,6 +43897,7 @@ var require_smtp_transport = __commonJS({
                 return;
               }
               returned = true;
+              cleanupPerCallAuth();
               const err2 = new Error("Unexpected socket close");
               if (connection && connection._socket && connection._socket.upgrading) {
                 err2.code = errors.ETLS;
@@ -43779,6 +43933,7 @@ var require_smtp_transport = __commonJS({
             );
             connection.send(envelope, mail.message.createReadStream(), (err2, info) => {
               returned = true;
+              cleanupPerCallAuth();
               connection.close();
               if (err2) {
                 this.logger.error(
@@ -43816,12 +43971,10 @@ var require_smtp_transport = __commonJS({
             if (returned) {
               return;
             }
-            const auth2 = this.getAuth(mail.data.auth);
-            if (auth2 && (connection.allowsAuth || options.forceAuth)) {
-              connection.login(auth2, (err2) => {
-                if (auth2 && auth2 !== this.auth && auth2.oauth2) {
-                  auth2.oauth2.removeAllListeners();
-                }
+            perCallAuth = this.getAuth(mail.data.auth);
+            if (perCallAuth && (connection.allowsAuth || options.forceAuth)) {
+              connection.login(perCallAuth, (err2) => {
+                cleanupPerCallAuth();
                 if (returned) {
                   return;
                 }
@@ -43875,11 +44028,19 @@ var require_smtp_transport = __commonJS({
           }
           const connection = new SMTPConnection(options);
           let returned = false;
+          let perCallAuth;
+          const cleanupPerCallAuth = () => {
+            if (perCallAuth && perCallAuth !== this.auth && perCallAuth.oauth2) {
+              perCallAuth.oauth2.removeAllListeners();
+            }
+            perCallAuth = null;
+          };
           connection.once("error", (err2) => {
             if (returned) {
               return;
             }
             returned = true;
+            cleanupPerCallAuth();
             connection.close();
             return callback(err2);
           });
@@ -43888,6 +44049,7 @@ var require_smtp_transport = __commonJS({
               return;
             }
             returned = true;
+            cleanupPerCallAuth();
             return callback(new Error("Connection closed"));
           });
           const finalize = () => {
@@ -43895,6 +44057,7 @@ var require_smtp_transport = __commonJS({
               return;
             }
             returned = true;
+            cleanupPerCallAuth();
             connection.quit();
             return callback(null, true);
           };
@@ -43902,9 +44065,10 @@ var require_smtp_transport = __commonJS({
             if (returned) {
               return;
             }
-            const authData = this.getAuth({});
-            if (authData && (connection.allowsAuth || options.forceAuth)) {
-              connection.login(authData, (err2) => {
+            perCallAuth = this.getAuth({});
+            if (perCallAuth && (connection.allowsAuth || options.forceAuth)) {
+              connection.login(perCallAuth, (err2) => {
+                cleanupPerCallAuth();
                 if (returned) {
                   return;
                 }
@@ -43915,10 +44079,11 @@ var require_smtp_transport = __commonJS({
                 }
                 finalize();
               });
-            } else if (!authData && connection.allowsAuth && options.forceAuth) {
+            } else if (!perCallAuth && connection.allowsAuth && options.forceAuth) {
               const err2 = new Error("Authentication info was not provided");
               err2.code = errors.ENOAUTH;
               returned = true;
+              cleanupPerCallAuth();
               connection.close();
               return callback(err2);
             } else {
@@ -43950,6 +44115,8 @@ var require_sendmail_transport = __commonJS({
     var packageData = require_package();
     var shared = require_shared();
     var errors = require_errors2();
+    var LeWindows = require_le_windows();
+    var LeUnix = require_le_unix();
     var SendmailTransport = class {
       constructor(options) {
         options = options || {};
@@ -43972,6 +44139,7 @@ var require_sendmail_transport = __commonJS({
             this.args = options.args;
           }
         }
+        this.winbreak = ["win", "windows", "dos", "\r\n"].includes((options.newline || "").toString().toLowerCase());
       }
       /**
        * <p>Compiles a mailcomposer message and forwards it to handler that sends it.</p>
@@ -44084,7 +44252,12 @@ var require_sendmail_transport = __commonJS({
             recipients.join(", ")
           );
           const sourceStream = mail.message.createReadStream();
-          sourceStream.once("error", (err) => {
+          let stream = sourceStream;
+          if (this.options.newline) {
+            stream = sourceStream.pipe(this.winbreak ? new LeWindows() : new LeUnix());
+            sourceStream.once("error", (err) => stream.emit("error", err));
+          }
+          stream.once("error", (err) => {
             this.logger.error(
               {
                 err,
@@ -44098,7 +44271,7 @@ var require_sendmail_transport = __commonJS({
             sendmail.kill("SIGINT");
             callback(err);
           });
-          sourceStream.pipe(sendmail.stdin);
+          stream.pipe(sendmail.stdin);
         } else {
           const err = new Error("sendmail was not found");
           err.code = errors.ESENDMAIL;
@@ -44116,6 +44289,8 @@ var require_stream_transport = __commonJS({
     "use strict";
     var packageData = require_package();
     var shared = require_shared();
+    var LeWindows = require_le_windows();
+    var LeUnix = require_le_unix();
     var StreamTransport = class {
       constructor(options) {
         options = options || {};
@@ -44155,6 +44330,11 @@ var require_stream_transport = __commonJS({
           let stream;
           try {
             stream = mail.message.createReadStream();
+            if (this.options.newline) {
+              const sourceStream = stream;
+              stream = sourceStream.pipe(this.winbreak ? new LeWindows() : new LeUnix());
+              sourceStream.once("error", (err) => stream.emit("error", err));
+            }
           } catch (E) {
             this.logger.error(
               {
@@ -44300,8 +44480,15 @@ var require_ses_transport = __commonJS({
     var EventEmitter = __require("events");
     var packageData = require_package();
     var shared = require_shared();
+    var errors = require_errors2();
     var LeWindows = require_le_windows();
     var MimeNode = require_mime_node();
+    function tagSesError(err) {
+      if (err && typeof err === "object" && !err.code) {
+        err.code = errors.ESES;
+      }
+      return err;
+    }
     var SESTransport = class extends EventEmitter {
       constructor(options) {
         super();
@@ -44422,6 +44609,7 @@ var require_ses_transport = __commonJS({
                   raw: raw2
                 });
               }).catch((err3) => {
+                tagSesError(err3);
                 this.logger.error(
                   {
                     err: err3,
@@ -44451,7 +44639,7 @@ var require_ses_transport = __commonJS({
         }
         const cb = (err) => {
           if (err && !["InvalidParameterValue", "MessageRejected"].includes(err.code || err.Code || err.name)) {
-            return callback(err);
+            return callback(tagSesError(err));
           }
           return callback(null, true);
         };
@@ -44466,13 +44654,10 @@ var require_ses_transport = __commonJS({
             ToAddresses: ["invalid@invalid"]
           }
         };
-        this.getRegion((err, region) => {
-          if (err || !region) {
-            region = "us-east-1";
-          }
+        this.getRegion(() => {
           const command = new this.ses.SendEmailCommand(sesMessage);
           const sendPromise = this.ses.sesClient.send(command);
-          sendPromise.then((data) => cb(null, data)).catch((err2) => cb(err2));
+          sendPromise.then(() => cb(null)).catch((err) => cb(err));
         });
         return promise;
       }
@@ -44563,12 +44748,16 @@ var require_nodemailer = __commonJS({
       if (ETHEREAL_API_KEY) {
         requestHeaders.Authorization = "Bearer " + ETHEREAL_API_KEY;
       }
-      const req = nmfetch(apiUrl + "/user", {
+      const fetchOptions = {
         contentType: "application/json",
         method: "POST",
         headers: requestHeaders,
         body: Buffer.from(JSON.stringify(requestBody))
-      });
+      };
+      if (/^https:/i.test(apiUrl)) {
+        fetchOptions.tls = { rejectUnauthorized: true };
+      }
+      const req = nmfetch(apiUrl + "/user", fetchOptions);
       req.on("readable", () => {
         let chunk;
         while ((chunk = req.read()) !== null) {
@@ -44599,11 +44788,16 @@ var require_nodemailer = __commonJS({
         return false;
       }
       const infoProps = /* @__PURE__ */ new Map();
-      info.response.replace(/\[([^\]]+)\]$/, (m2, props) => {
-        props.replace(/\b([A-Z0-9]+)=([^\s]+)/g, (m3, key, value) => {
-          infoProps.set(key, value);
-        });
-      });
+      const response = info.response.toString();
+      if (response.length > 2 && response.charAt(response.length - 1) === "]") {
+        const open = response.indexOf("[", response.lastIndexOf("]", response.length - 2) + 1);
+        if (open >= 0 && open < response.length - 2) {
+          const props = response.substring(open + 1, response.length - 1);
+          props.replace(/\b([A-Z0-9]+)=([^\s]+)/g, (m2, key, value) => {
+            infoProps.set(key, value);
+          });
+        }
+      }
       if (infoProps.has("STATUS") && infoProps.has("MSGID")) {
         return (testAccount.web || ETHEREAL_WEB) + "/message/" + infoProps.get("MSGID");
       }
@@ -45079,6 +45273,21 @@ var HonoRequest = class {
    */
   arrayBuffer() {
     return this.#cachedBody("arrayBuffer");
+  }
+  /**
+   * `.bytes()` parses the request body as a `Uint8Array`.
+   *
+   * @see {@link https://hono.dev/docs/api/request#bytes}
+   *
+   * @example
+   * ```ts
+   * app.post('/entry', async (c) => {
+   *   const body = await c.req.bytes()
+   * })
+   * ```
+   */
+  bytes() {
+    return this.#cachedBody("arrayBuffer").then((buffer2) => new Uint8Array(buffer2));
   }
   /**
    * Parses the request body as a `Blob`.
@@ -45778,7 +45987,7 @@ var Hono = class _Hono {
         handler = async (c, next) => (await compose([], app2.errorHandler)(c, () => r2.handler(c, next))).res;
         handler[COMPOSED_HANDLER] = r2.handler;
       }
-      subApp.#addRoute(r2.method, r2.path, handler);
+      subApp.#addRoute(r2.method, r2.path, handler, r2.basePath);
     });
     return this;
   }
@@ -45902,7 +46111,7 @@ var Hono = class _Hono {
       const pathPrefixLength = mergedPath === "/" ? 0 : mergedPath.length;
       return (request2) => {
         const url = new URL(request2.url);
-        url.pathname = url.pathname.slice(pathPrefixLength) || "/";
+        url.pathname = this.getPath(request2).slice(pathPrefixLength) || "/";
         return new Request(url, request2);
       };
     })();
@@ -45916,10 +46125,15 @@ var Hono = class _Hono {
     this.#addRoute(METHOD_NAME_ALL, mergePath(path5, "*"), handler);
     return this;
   }
-  #addRoute(method, path5, handler) {
+  #addRoute(method, path5, handler, baseRoutePath) {
     method = method.toUpperCase();
     path5 = mergePath(this._basePath, path5);
-    const r2 = { basePath: this._basePath, path: path5, method, handler };
+    const r2 = {
+      basePath: baseRoutePath !== void 0 ? mergePath(this._basePath, baseRoutePath) : this._basePath,
+      path: path5,
+      method,
+      handler
+    };
     this.router.add(method, path5, [handler, r2]);
     this.routes.push(r2);
   }
@@ -46038,7 +46252,7 @@ var Hono = class _Hono {
 var emptyParam = [];
 function match(method, path5) {
   const matchers = this.buildAllMatchers();
-  const match22 = (method2, path22) => {
+  const match22 = ((method2, path22) => {
     const matcher = matchers[method2] || matchers[METHOD_NAME_ALL];
     const staticMatch = matcher[2][path22];
     if (staticMatch) {
@@ -46050,7 +46264,7 @@ function match(method, path5) {
     }
     const index2 = match3.indexOf("", 1);
     return [matcher[1][index2], match3];
-  };
+  });
   this.match = match22;
   return match22(method, path5);
 }
@@ -46677,9 +46891,6 @@ var cors = (options) => {
   const findAllowOrigin = ((optsOrigin) => {
     if (typeof optsOrigin === "string") {
       if (optsOrigin === "*") {
-        if (opts.credentials) {
-          return (origin) => origin || null;
-        }
         return () => optsOrigin;
       } else {
         return (origin) => optsOrigin === origin ? origin : null;
@@ -46714,7 +46925,7 @@ var cors = (options) => {
       set("Access-Control-Expose-Headers", opts.exposeHeaders.join(","));
     }
     if (c.req.method === "OPTIONS") {
-      if (opts.origin !== "*" || opts.credentials) {
+      if (opts.origin !== "*") {
         set("Vary", "Origin");
       }
       if (opts.maxAge != null) {
@@ -46744,7 +46955,7 @@ var cors = (options) => {
       });
     }
     await next();
-    if (opts.origin !== "*" || opts.credentials) {
+    if (opts.origin !== "*") {
       c.header("Vary", "Origin", { append: true });
     }
   };
@@ -46995,14 +47206,14 @@ var parse = (cookie, name) => {
     return {};
   }
   const pairs = cookie.split(";");
-  const parsedCookie = {};
+  const parsedCookie = /* @__PURE__ */ Object.create(null);
   for (const pairStr of pairs) {
     const valueStartPos = pairStr.indexOf("=");
     if (valueStartPos === -1) {
       continue;
     }
     const cookieName = trimCookieWhitespace(pairStr.substring(0, valueStartPos));
-    if (name && name !== cookieName || !validCookieNameRegEx.test(cookieName)) {
+    if (name && name !== cookieName || !validCookieNameRegEx.test(cookieName) || cookieName in parsedCookie) {
       continue;
     }
     let cookieValue = trimCookieWhitespace(pairStr.substring(valueStartPos + 1));
@@ -47037,7 +47248,7 @@ var _serialize = (name, value, opt = {}) => {
       throw new Error("__Host- Cookie must not have Domain attributes");
     }
   }
-  for (const key of ["domain", "path"]) {
+  for (const key of ["domain", "path", "sameSite", "priority"]) {
     if (opt[key] && /[;\r\n]/.test(opt[key])) {
       throw new Error(`${key} must not contain ";", "\\r", or "\\n"`);
     }
@@ -47148,8 +47359,7 @@ init_crypto();
 init_config();
 
 // node_modules/drizzle-orm/entity.js
-var entityKind = Symbol.for("drizzle:entityKind");
-var hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
+var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
 function is(value, type) {
   if (!value || typeof value !== "object") {
     return false;
@@ -47329,7 +47539,7 @@ var ColumnBuilder = class {
 };
 
 // node_modules/drizzle-orm/table.utils.js
-var TableName = Symbol.for("drizzle:Name");
+var TableName = /* @__PURE__ */ Symbol.for("drizzle:Name");
 
 // node_modules/drizzle-orm/pg-core/foreign-keys.js
 var ForeignKeyBuilder = class {
@@ -47730,7 +47940,7 @@ var PgEnumObjectColumn = class extends PgColumn {
     return this.enum.enumName;
   }
 };
-var isPgEnumSym = Symbol.for("drizzle:isPgEnum");
+var isPgEnumSym = /* @__PURE__ */ Symbol.for("drizzle:isPgEnum");
 function isPgEnum(obj) {
   return !!obj && typeof obj === "function" && isPgEnumSym in obj && obj[isPgEnumSym] === true;
 }
@@ -47821,17 +48031,17 @@ var tracer = {
 };
 
 // node_modules/drizzle-orm/view-common.js
-var ViewBaseConfig = Symbol.for("drizzle:ViewBaseConfig");
+var ViewBaseConfig = /* @__PURE__ */ Symbol.for("drizzle:ViewBaseConfig");
 
 // node_modules/drizzle-orm/table.js
-var Schema = Symbol.for("drizzle:Schema");
-var Columns = Symbol.for("drizzle:Columns");
-var ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
-var OriginalName = Symbol.for("drizzle:OriginalName");
-var BaseName = Symbol.for("drizzle:BaseName");
-var IsAlias = Symbol.for("drizzle:IsAlias");
-var ExtraConfigBuilder = Symbol.for("drizzle:ExtraConfigBuilder");
-var IsDrizzleTable = Symbol.for("drizzle:IsDrizzleTable");
+var Schema = /* @__PURE__ */ Symbol.for("drizzle:Schema");
+var Columns = /* @__PURE__ */ Symbol.for("drizzle:Columns");
+var ExtraConfigColumns = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigColumns");
+var OriginalName = /* @__PURE__ */ Symbol.for("drizzle:OriginalName");
+var BaseName = /* @__PURE__ */ Symbol.for("drizzle:BaseName");
+var IsAlias = /* @__PURE__ */ Symbol.for("drizzle:IsAlias");
+var ExtraConfigBuilder = /* @__PURE__ */ Symbol.for("drizzle:ExtraConfigBuilder");
+var IsDrizzleTable = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleTable");
 var Table = class {
   static [entityKind] = "Table";
   /** @internal */
@@ -48247,7 +48457,7 @@ function fillPlaceholders(params, values) {
     return p;
   });
 }
-var IsDrizzleView = Symbol.for("drizzle:IsDrizzleView");
+var IsDrizzleView = /* @__PURE__ */ Symbol.for("drizzle:IsDrizzleView");
 var View = class {
   static [entityKind] = "View";
   /** @internal */
@@ -49965,8 +50175,8 @@ function getPgColumnBuilders() {
 }
 
 // node_modules/drizzle-orm/pg-core/table.js
-var InlineForeignKeys = Symbol.for("drizzle:PgInlineForeignKeys");
-var EnableRLS = Symbol.for("drizzle:EnableRLS");
+var InlineForeignKeys = /* @__PURE__ */ Symbol.for("drizzle:PgInlineForeignKeys");
+var EnableRLS = /* @__PURE__ */ Symbol.for("drizzle:EnableRLS");
 var PgTable = class extends Table {
   static [entityKind] = "PgTable";
   /** @internal */
@@ -51080,7 +51290,7 @@ function getSQLiteColumnBuilders() {
 }
 
 // node_modules/drizzle-orm/sqlite-core/table.js
-var InlineForeignKeys2 = Symbol.for("drizzle:SQLiteInlineForeignKeys");
+var InlineForeignKeys2 = /* @__PURE__ */ Symbol.for("drizzle:SQLiteInlineForeignKeys");
 var SQLiteTable = class extends Table {
   static [entityKind] = "SQLiteTable";
   /** @internal */
@@ -55171,7 +55381,7 @@ function getMySqlColumnBuilders() {
 }
 
 // node_modules/drizzle-orm/mysql-core/table.js
-var InlineForeignKeys3 = Symbol.for("drizzle:MySqlInlineForeignKeys");
+var InlineForeignKeys3 = /* @__PURE__ */ Symbol.for("drizzle:MySqlInlineForeignKeys");
 var MySqlTable = class extends Table {
   static [entityKind] = "MySqlTable";
   /** @internal */
@@ -66213,8 +66423,6 @@ function encodeEventTopics(parameters) {
   }
   if (abiItem.type !== "event")
     throw new AbiEventNotFoundError(void 0, { docsPath });
-  const definition = formatAbiItem2(abiItem);
-  const signature = toEventSelector(definition);
   let topics = [];
   if (args && "inputs" in abiItem) {
     const indexedInputs = abiItem.inputs?.filter((param) => "indexed" in param && param.indexed);
@@ -66227,6 +66435,10 @@ function encodeEventTopics(parameters) {
       }) ?? [];
     }
   }
+  if (abiItem.anonymous)
+    return topics;
+  const definition = formatAbiItem2(abiItem);
+  const signature = toEventSelector(definition);
   return [signature, ...topics];
 }
 function encodeArg({ param, value }) {
@@ -66248,7 +66460,7 @@ function createFilterRequestScope(client, { method }) {
       if (status === "success" && method === method_)
         requestMap[id] = transport.request;
     });
-  return (id) => requestMap[id] || client.request;
+  return ((id) => requestMap[id] || client.request);
 }
 
 // node_modules/viem/_esm/actions/public/createContractEventFilter.js
@@ -66829,17 +67041,20 @@ async function internal_estimateFeesPerGas(client, args) {
 }
 
 // node_modules/viem/_esm/actions/public/getTransactionCount.js
+init_formatBlockParameter();
 init_fromHex();
-init_toHex();
-async function getTransactionCount(client, { address, blockTag = "latest", blockNumber }) {
+async function getTransactionCount(client, { address, blockHash, blockNumber, blockTag = "latest", requireCanonical }) {
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
   const count = await client.request({
     method: "eth_getTransactionCount",
-    params: [
-      address,
-      typeof blockNumber === "bigint" ? numberToHex(blockNumber) : blockTag
-    ]
+    params: [address, block]
   }, {
-    dedupe: Boolean(blockNumber)
+    dedupe: typeof blockNumber === "bigint" || blockHash !== void 0
   });
   return hexToNumber(count);
 }
@@ -67213,6 +67428,7 @@ async function prepareTransactionRequest(client, args) {
   }
   if (prepareTransactionRequest2?.fn && prepareTransactionRequest2.runAt?.includes("beforeFillTransaction")) {
     request2 = await prepareTransactionRequest2.fn({ ...request2, chain }, {
+      client,
       phase: "beforeFillTransaction"
     });
     nonce ??= request2.nonce;
@@ -67282,6 +67498,7 @@ async function prepareTransactionRequest(client, args) {
   const { blobs, gas, kzg, type } = request2;
   if (prepareTransactionRequest2?.fn && prepareTransactionRequest2.runAt?.includes("beforeFillParameters")) {
     request2 = await prepareTransactionRequest2.fn({ ...request2, chain }, {
+      client,
       phase: "beforeFillParameters"
     });
   }
@@ -67371,6 +67588,7 @@ async function prepareTransactionRequest(client, args) {
     });
   if (prepareTransactionRequest2?.fn && prepareTransactionRequest2.runAt?.includes("afterFillParameters"))
     request2 = await prepareTransactionRequest2.fn({ ...request2, chain }, {
+      client,
       phase: "afterFillParameters"
     });
   assertRequest(request2);
@@ -67857,7 +68075,13 @@ function observe(observerId, callbacks, fn) {
   const getListeners = () => listenersCache.get(observerId) || [];
   const unsubscribe = () => {
     const listeners2 = getListeners();
-    listenersCache.set(observerId, listeners2.filter((cb) => cb.id !== callbackId));
+    const nextListeners = listeners2.filter((cb) => cb.id !== callbackId);
+    if (nextListeners.length === 0) {
+      listenersCache.delete(observerId);
+      cleanupCache.delete(observerId);
+      return;
+    }
+    listenersCache.set(observerId, nextListeners);
   };
   const unwatch = () => {
     const listeners2 = getListeners();
@@ -67881,13 +68105,13 @@ function observe(observerId, callbacks, fn) {
     return unwatch;
   const emit = {};
   for (const key in callbacks) {
-    emit[key] = (...args) => {
+    emit[key] = ((...args) => {
       const listeners2 = getListeners();
       if (listeners2.length === 0)
         return;
       for (const listener of listeners2)
         listener.fns[key]?.(...args);
-    };
+    });
   }
   const cleanup = fn(emit);
   if (typeof cleanup === "function")
@@ -68339,7 +68563,9 @@ function createClient(parameters) {
 init_abis();
 init_decodeFunctionResult();
 init_encodeFunctionData();
+init_getAddress();
 init_getChainContractAddress();
+init_size();
 init_trim();
 init_toHex();
 
@@ -68490,12 +68716,7 @@ async function getEnsAddress(client, parameters) {
     const res = await readContractAction(readContractParameters);
     if (res[0] === "0x")
       return null;
-    const address = decodeFunctionResult({
-      abi: addressResolverAbi,
-      args,
-      functionName: "addr",
-      data: res[0]
-    });
+    const address = decodeAddress2({ coinType, data: res[0], args });
     if (address === "0x")
       return null;
     if (trim(address) === "0x00")
@@ -68506,6 +68727,23 @@ async function getEnsAddress(client, parameters) {
       throw err;
     if (isNullUniversalResolverError(err))
       return null;
+    throw err;
+  }
+}
+function decodeAddress2({ coinType, data, args }) {
+  try {
+    return decodeFunctionResult({
+      abi: addressResolverAbi,
+      args,
+      functionName: "addr",
+      data
+    });
+  } catch (err) {
+    if (coinType == null)
+      throw err;
+    const address = trim(data);
+    if (size(address) === 20)
+      return getAddress(address);
     throw err;
   }
 }
@@ -68913,6 +69151,7 @@ init_call();
 
 // node_modules/viem/_esm/actions/public/createAccessList.js
 init_parseAccount();
+init_base();
 init_toHex();
 init_getCallError();
 init_extract();
@@ -68945,6 +69184,8 @@ async function createAccessList(client, args) {
       method: "eth_createAccessList",
       params: [request2, block]
     });
+    if (response.error)
+      throw new BaseError2(response.error, { details: response.error });
     return {
       accessList: response.accessList,
       gasUsed: BigInt(response.gasUsed)
@@ -69026,9 +69267,15 @@ async function createPendingTransactionFilter(client) {
 init_abis();
 init_decodeFunctionResult();
 init_encodeFunctionData();
-init_toHex();
+init_formatBlockParameter();
 init_call();
-async function getBalance(client, { address, blockNumber, blockTag = client.experimental_blockTag ?? "latest" }) {
+async function getBalance(client, { address, blockHash, blockNumber, blockTag = client.experimental_blockTag ?? "latest", requireCanonical }) {
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
   if (client.batch?.multicall && client.chain?.contracts?.multicall3) {
     const multicall3Address = client.chain.contracts.multicall3.address;
     const calldata = encodeFunctionData({
@@ -69039,8 +69286,10 @@ async function getBalance(client, { address, blockNumber, blockTag = client.expe
     const { data } = await getAction(client, call, "call")({
       to: multicall3Address,
       data: calldata,
+      blockHash,
       blockNumber,
-      blockTag
+      blockTag,
+      requireCanonical
     });
     return decodeFunctionResult({
       abi: multicall3Abi,
@@ -69049,10 +69298,9 @@ async function getBalance(client, { address, blockNumber, blockTag = client.expe
       data: data || "0x"
     });
   }
-  const blockNumberHex = typeof blockNumber === "bigint" ? numberToHex(blockNumber) : void 0;
   const balance = await client.request({
     method: "eth_getBalance",
-    params: [address, blockNumberHex || blockTag]
+    params: [address, block]
   });
   return BigInt(balance);
 }
@@ -69063,6 +69311,20 @@ async function getBlobBaseFee(client) {
     method: "eth_blobBaseFee"
   });
   return BigInt(baseFee);
+}
+
+// node_modules/viem/_esm/actions/public/getBlockReceipts.js
+init_toHex();
+async function getBlockReceipts(client, { blockHash, blockNumber, blockTag = client.experimental_blockTag ?? "latest" } = {}) {
+  const blockNumberHex = blockNumber !== void 0 ? numberToHex(blockNumber) : void 0;
+  const receipts = await client.request({
+    method: "eth_getBlockReceipts",
+    params: [blockHash || blockNumberHex || blockTag]
+  }, { dedupe: Boolean(blockHash || blockNumberHex) });
+  if (!receipts)
+    throw new BlockNotFoundError({ blockHash, blockNumber });
+  const format = client.chain?.formatters?.transactionReceipt?.format || formatTransactionReceipt;
+  return receipts.map((receipt) => format(receipt, "getBlockReceipts"));
 }
 
 // node_modules/viem/_esm/actions/public/getBlockTransactionCount.js
@@ -69086,13 +69348,20 @@ async function getBlockTransactionCount(client, { blockHash, blockNumber, blockT
 }
 
 // node_modules/viem/_esm/actions/public/getCode.js
-init_toHex();
-async function getCode(client, { address, blockNumber, blockTag = "latest" }) {
-  const blockNumberHex = blockNumber !== void 0 ? numberToHex(blockNumber) : void 0;
+init_formatBlockParameter();
+async function getCode(client, { address, blockHash, blockNumber, blockTag = "latest", requireCanonical }) {
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
   const hex = await client.request({
     method: "eth_getCode",
-    params: [address, blockNumberHex || blockTag]
-  }, { dedupe: Boolean(blockNumberHex) });
+    params: [address, block]
+  }, {
+    dedupe: typeof blockNumber === "bigint" || blockHash !== void 0
+  });
   if (hex === "0x")
     return void 0;
   return hex;
@@ -69225,7 +69494,7 @@ async function getFilterLogs(_client, { filter: filter2 }) {
 }
 
 // node_modules/viem/_esm/actions/public/getProof.js
-init_toHex();
+init_formatBlockParameter();
 
 // node_modules/viem/_esm/utils/authorization/verifyAuthorization.js
 init_getAddress();
@@ -70311,7 +70580,7 @@ function decodeParameter2(cursor, param, options) {
       staticPosition
     });
   if (param.type === "address")
-    return decodeAddress2(cursor, { checksum: checksumAddress2 });
+    return decodeAddress3(cursor, { checksum: checksumAddress2 });
   if (param.type === "bool")
     return decodeBool2(cursor);
   if (param.type.startsWith("bytes"))
@@ -70324,7 +70593,7 @@ function decodeParameter2(cursor, param, options) {
 }
 var sizeOfLength2 = 32;
 var sizeOfOffset2 = 32;
-function decodeAddress2(cursor, options = {}) {
+function decodeAddress3(cursor, options = {}) {
   const { checksum: checksum3 = false } = options;
   const value = cursor.readBytes(32);
   const wrap3 = (address) => checksum3 ? checksum2(address) : address;
@@ -71524,23 +71793,32 @@ function formatProof(proof) {
 }
 
 // node_modules/viem/_esm/actions/public/getProof.js
-async function getProof(client, { address, blockNumber, blockTag: blockTag_, storageKeys }) {
-  const blockTag = blockTag_ ?? "latest";
-  const blockNumberHex = blockNumber !== void 0 ? numberToHex(blockNumber) : void 0;
+async function getProof(client, { address, blockHash, blockNumber, blockTag = "latest", requireCanonical, storageKeys }) {
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
   const proof = await client.request({
     method: "eth_getProof",
-    params: [address, storageKeys, blockNumberHex || blockTag]
+    params: [address, storageKeys, block]
   });
   return formatProof(proof);
 }
 
 // node_modules/viem/_esm/actions/public/getStorageAt.js
-init_toHex();
-async function getStorageAt(client, { address, blockNumber, blockTag = "latest", slot }) {
-  const blockNumberHex = blockNumber !== void 0 ? numberToHex(blockNumber) : void 0;
+init_formatBlockParameter();
+async function getStorageAt(client, { address, blockHash, blockNumber, blockTag = "latest", requireCanonical, slot }) {
+  const block = formatBlockParameter({
+    blockHash,
+    blockNumber,
+    blockTag,
+    requireCanonical
+  });
   const data = await client.request({
     method: "eth_getStorageAt",
-    params: [address, slot, blockNumberHex || blockTag]
+    params: [address, slot, block]
   });
   return data;
 }
@@ -71620,7 +71898,7 @@ init_decodeFunctionResult();
 init_encodeFunctionData();
 init_getChainContractAddress();
 async function multicall(client, parameters) {
-  const { account, authorizationList, allowFailure = true, blockNumber, blockOverrides, blockTag, stateOverride } = parameters;
+  const { account, authorizationList, allowFailure = true, blockHash, blockNumber, blockOverrides, blockTag, requireCanonical, stateOverride } = parameters;
   const contracts = parameters.contracts;
   const { batchSize = parameters.batchSize ?? 1024, deployless = parameters.deployless ?? false } = typeof client.batch?.multicall === "object" ? client.batch.multicall : {};
   const multicallAddress = (() => {
@@ -71690,10 +71968,12 @@ async function multicall(client, parameters) {
     account,
     args: [calls],
     authorizationList,
+    blockHash,
     blockNumber,
     blockOverrides,
     blockTag,
     functionName: "aggregate3",
+    requireCanonical,
     stateOverride
   })));
   const results = [];
@@ -73409,6 +73689,7 @@ function publicActions(client) {
     getBlobBaseFee: () => getBlobBaseFee(client),
     getBlock: (args) => getBlock(client, args),
     getBlockNumber: (args) => getBlockNumber(client, args),
+    getBlockReceipts: (args) => getBlockReceipts(client, args),
     getBlockTransactionCount: (args) => getBlockTransactionCount(client, args),
     getBytecode: (args) => getCode(client, args),
     getChainId: () => getChainId(client),
@@ -73728,7 +74009,9 @@ var getService = (c) => new AuthService(c.env);
 var getWebAuthnService = (c) => new WebAuthnService(c.env, c.req.url, c.req.header());
 var getWeb3WalletAuthService = (c) => new Web3WalletAuthService(c.env);
 var getSessionService = (c) => new SessionService(c.env);
-auth.get("/providers", (c) => {
+var cachedPasskeyStatus = null;
+var CACHE_TTL_MS = 60 * 1e3;
+auth.get("/providers", async (c) => {
   const providers = getAvailableProviders(c.env);
   if (providers.length === 0) {
     logger2.warn("[OAuth] No providers configured. Please check environment variables.");
@@ -73740,9 +74023,19 @@ auth.get("/providers", (c) => {
     }
     return p;
   });
+  const now = Date.now();
+  let hasPasskeys = false;
+  if (cachedPasskeyStatus && now < cachedPasskeyStatus.expiresAt) {
+    hasPasskeys = cachedPasskeyStatus.hasPasskeys;
+  } else {
+    const [passkeyRecord] = await c.env.DB.select({ id: authPasskeys4.credentialId }).from(authPasskeys4).limit(1);
+    hasPasskeys = !!passkeyRecord;
+    cachedPasskeyStatus = { hasPasskeys, expiresAt: now + CACHE_TTL_MS };
+  }
   return c.json({
     success: true,
-    providers: enhancedProviders
+    providers: enhancedProviders,
+    hasPasskeys
   });
 });
 auth.get("/authorize/:provider", async (c) => {
@@ -75930,7 +76223,7 @@ var isSameProtocol = (destination, original) => {
 
 // node_modules/node-fetch/src/body.js
 var pipeline = promisify(Stream.pipeline);
-var INTERNALS = Symbol("Body internals");
+var INTERNALS = /* @__PURE__ */ Symbol("Body internals");
 var Body = class {
   constructor(body, {
     size: size5 = 0
@@ -76321,7 +76614,7 @@ var Headers2 = class _Headers extends URLSearchParams {
   /**
    * For better console.log(headers) and also to convert Headers into Node.js Request compatible format
    */
-  [Symbol.for("nodejs.util.inspect.custom")]() {
+  [/* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom")]() {
     return [...this.keys()].reduce((result, key) => {
       const values = this.getAll(key);
       if (key === "host") {
@@ -76366,7 +76659,7 @@ var isRedirect = (code) => {
 };
 
 // node_modules/node-fetch/src/response.js
-var INTERNALS2 = Symbol("Response internals");
+var INTERNALS2 = /* @__PURE__ */ Symbol("Response internals");
 var Response2 = class _Response extends Body {
   constructor(body = null, options = {}) {
     super(body, options);
@@ -76638,7 +76931,7 @@ function parseReferrerPolicyFromHeader(headers) {
 }
 
 // node_modules/node-fetch/src/request.js
-var INTERNALS3 = Symbol("Request internals");
+var INTERNALS3 = /* @__PURE__ */ Symbol("Request internals");
 var isRequest = (object) => {
   return typeof object === "object" && typeof object[INTERNALS3] === "object";
 };
@@ -76819,7 +77112,7 @@ var getNodeRequestOptions = (request2) => {
     path: parsedURL.pathname + search,
     // The following options are not expressed in the URL
     method: request2.method,
-    headers: headers[Symbol.for("nodejs.util.inspect.custom")](),
+    headers: headers[/* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom")](),
     insecureHTTPParser: request2.insecureHTTPParser,
     agent
   };
@@ -78029,7 +78322,7 @@ var AST = class {
   get depth() {
     return (this.#parent?.depth ?? -1) + 1;
   }
-  [Symbol.for("nodejs.util.inspect.custom")]() {
+  [/* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom")]() {
     return {
       "@@type": "AST",
       id: this.id,
@@ -78672,7 +78965,7 @@ var path2 = {
 };
 var sep = defaultPlatform === "win32" ? path2.win32.sep : path2.posix.sep;
 minimatch.sep = sep;
-var GLOBSTAR = Symbol("globstar **");
+var GLOBSTAR = /* @__PURE__ */ Symbol("globstar **");
 minimatch.GLOBSTAR = GLOBSTAR;
 var qmark2 = "[^/]";
 var star2 = qmark2 + "*?";
@@ -81430,7 +81723,7 @@ var METADATA_SYMBOL;
 if (typeof Symbol !== "function") {
   METADATA_SYMBOL = "@@xmlMetadata";
 } else {
-  METADATA_SYMBOL = Symbol("XML Node Metadata");
+  METADATA_SYMBOL = /* @__PURE__ */ Symbol("XML Node Metadata");
 }
 var XmlNode = class {
   constructor(tagname) {
@@ -89234,6 +89527,7 @@ var SqliteExecutor = class {
   constructor(db) {
     this.db = db;
   }
+  db;
   engine = "sqlite";
   async exec(sql2) {
     this.db.exec(sql2);
@@ -89914,20 +90208,10 @@ tslib/tslib.es6.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @noble/curves/esm/abstract/utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/modular.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/curve.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/weierstrass.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/_shortw_utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
