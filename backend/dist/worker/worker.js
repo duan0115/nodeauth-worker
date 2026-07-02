@@ -105,146 +105,6 @@ var init_logger = __esm({
   }
 });
 
-// src/app/config.ts
-var SECURITY_CONFIG, CSP_POLICY, getEffectiveCSP, AppError;
-var init_config = __esm({
-  "src/app/config.ts"() {
-    "use strict";
-    SECURITY_CONFIG = {
-      MAX_LOGIN_ATTEMPTS: 5,
-      LOCKOUT_TIME: 15 * 60 * 1e3,
-      JWT_EXPIRY: 24 * 60 * 60,
-      // 24小时
-      MAX_INPUT_LENGTH: 100,
-      MIN_EXPORT_PASSWORD_LENGTH: 12,
-      MAX_OAUTH_ATTEMPTS: 3,
-      OAUTH_LOCKOUT_TIME: 10 * 60 * 1e3,
-      MAX_FILE_SIZE: 10 * 1024 * 1024
-    };
-    CSP_POLICY = {
-      // 脚本源: 允许本站、内联脚本(Vue必需) 以及 Cloudflare 统计脚本
-      SCRIPTS: [
-        "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'",
-        "'wasm-unsafe-eval'",
-        "https://static.cloudflareinsights.com"
-      ],
-      // 图片源: 允许本站、GitHub 头像、NodeLoc 头像、WalletConnect 链上资产Logo
-      IMAGES: [
-        "'self'",
-        "data:",
-        "blob:",
-        "https://avatars.githubusercontent.com",
-        "https://t.me",
-        // Telegram User Avatars
-        "https://*.telesco.pe",
-        // Telegram Avatar CDN
-        "https://www.nodeloc.com",
-        "https://lh3.googleusercontent.com",
-        // Google User Avatars
-        "https://www.google.com",
-        // Google Favicon API
-        "https://*.gstatic.com",
-        // Google 静态资源 (包括所有 t 系列 CDN)
-        "https://icons.bitwarden.net",
-        // Bitwarden Icon API
-        "https://favicon.im",
-        // Favicon.im API
-        "https://explorer-api.walletconnect.com",
-        // 允许加载各种Web3钱包Logo图库
-        "https://*.blizzard.com",
-        "https://*.battle.net"
-      ],
-      CONNECT: [
-        "'self'",
-        "https://api.github.com",
-        "https://github.com",
-        "https://cloudflareinsights.com",
-        "https://static.cloudflareinsights.com",
-        "https://accounts.google.com",
-        "https://www.googleapis.com",
-        "https://login.microsoftonline.com",
-        "https://graph.microsoft.com",
-        "https://openapi.baidu.com",
-        "https://pan.baidu.com",
-        "https://api.dropboxapi.com",
-        "https://content.dropboxapi.com",
-        "https://www.dropbox.com",
-        // WalletConnect (External) - Only needed if Proxy is OFF
-        "wss://relay.walletconnect.com",
-        "wss://relay.walletconnect.org",
-        "https://rpc.walletconnect.com",
-        "https://verify.walletconnect.com",
-        "https://verify.walletconnect.org"
-      ],
-      // 框架源: WalletConnect 防钓鱼 Verify API 必需挂载 iframe
-      FRAMES: [
-        "'self'",
-        "https://verify.walletconnect.com",
-        "https://verify.walletconnect.org"
-      ]
-    };
-    getEffectiveCSP = (env) => {
-      const isProxyOn = env.OAUTH_WALLETCONNECT_SELF_PROXY === "true";
-      const connectSet = /* @__PURE__ */ new Set([...CSP_POLICY.CONNECT]);
-      const imagesSet = /* @__PURE__ */ new Set([...CSP_POLICY.IMAGES]);
-      const framesSet = /* @__PURE__ */ new Set([...CSP_POLICY.FRAMES]);
-      connectSet.add("https://cloudflare-eth.com");
-      if (env.OAUTH_WALLETCONNECT_RPC_URL) {
-        try {
-          const rpcOrigin = new URL(env.OAUTH_WALLETCONNECT_RPC_URL).origin;
-          connectSet.add(rpcOrigin);
-        } catch (e2) {
-        }
-      }
-      const connect = Array.from(connectSet);
-      const images = Array.from(imagesSet);
-      const frames = Array.from(framesSet);
-      if (isProxyOn) {
-        const externalWC = [
-          "wss://relay.walletconnect.com",
-          "wss://relay.walletconnect.org",
-          "https://rpc.walletconnect.com",
-          "https://verify.walletconnect.com",
-          "https://verify.walletconnect.org",
-          "https://explorer-api.walletconnect.com"
-        ];
-        return {
-          defaultSrc: ["'self'"],
-          scriptSrc: CSP_POLICY.SCRIPTS,
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: images.filter((d2) => !externalWC.includes(d2)),
-          connectSrc: connect.filter((d2) => !externalWC.includes(d2)),
-          fontSrc: ["'self'", "data:"],
-          frameSrc: frames.filter((d2) => !externalWC.includes(d2)),
-          workerSrc: ["'self'", "blob:"],
-          objectSrc: ["'none'"]
-        };
-      }
-      return {
-        defaultSrc: ["'self'"],
-        scriptSrc: CSP_POLICY.SCRIPTS,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: images,
-        connectSrc: connect,
-        fontSrc: ["'self'", "data:"],
-        frameSrc: frames,
-        workerSrc: ["'self'", "blob:"],
-        objectSrc: ["'none'"]
-      };
-    };
-    AppError = class extends Error {
-      statusCode;
-      constructor(message, statusCode = 500) {
-        super(message);
-        this.name = "AppError";
-        this.statusCode = statusCode;
-      }
-    };
-  }
-});
-
 // src/shared/utils/crypto.ts
 var crypto_exports = {};
 __export(crypto_exports, {
@@ -11460,320 +11320,6 @@ var init_call = __esm({
   }
 });
 
-// src/shared/utils/common.ts
-function sanitizeInput(input, maxLength = SECURITY_CONFIG.MAX_INPUT_LENGTH) {
-  if (typeof input !== "string") return "";
-  return input.replace(/[<>"'&\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]/g, "").trim().substring(0, maxLength);
-}
-var init_common = __esm({
-  "src/shared/utils/common.ts"() {
-    "use strict";
-    init_config();
-  }
-});
-
-// src/shared/utils/otp/base.ts
-function validateBase32Secret(secret) {
-  if (!secret || typeof secret !== "string") return false;
-  const cleaned = secret.replace(/\s/g, "").toUpperCase();
-  return /^[A-Z2-7]+=*$/.test(cleaned) && cleaned.length >= 8;
-}
-function base32Decode(encoded) {
-  const cleanInput = encoded.toUpperCase().replace(/[^A-Z2-7]/g, "");
-  const buffer2 = new Uint8Array(Math.floor(cleanInput.length * 5 / 8));
-  let bits = 0, value = 0, index2 = 0;
-  for (let i2 = 0; i2 < cleanInput.length; i2++) {
-    const charValue = BASE32_CHARS.indexOf(cleanInput[i2]);
-    if (charValue === -1) continue;
-    value = value << 5 | charValue;
-    bits += 5;
-    if (bits >= 8) {
-      buffer2[index2++] = value >>> bits - 8 & 255;
-      bits -= 8;
-    }
-  }
-  return buffer2;
-}
-function bytesToBase32(bytes) {
-  let bits = 0, value = 0, output = "";
-  for (let i2 = 0; i2 < bytes.length; i2++) {
-    value = value << 8 | bytes[i2];
-    bits += 8;
-    while (bits >= 5) {
-      output += BASE32_CHARS[value >>> bits - 5 & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) {
-    output += BASE32_CHARS[value << 5 - bits & 31];
-  }
-  return output;
-}
-async function hmac2(key, data, algorithm = "SHA-1") {
-  const keyBuffer = typeof key === "string" ? new TextEncoder().encode(key) : key;
-  const dataBuffer = new ArrayBuffer(8);
-  new DataView(dataBuffer).setBigUint64(0, BigInt(data), false);
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyBuffer,
-    { name: "HMAC", hash: algorithm.includes("-") ? algorithm : algorithm.replace("SHA", "SHA-") },
-    false,
-    ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", cryptoKey, dataBuffer);
-  return new Uint8Array(signature);
-}
-async function hmacSHA1(key, data) {
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    key,
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", cryptoKey, data);
-  return new Uint8Array(signature);
-}
-var BASE32_CHARS;
-var init_base2 = __esm({
-  "src/shared/utils/otp/base.ts"() {
-    "use strict";
-    BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  }
-});
-
-// src/shared/utils/otp/protocols/totp.ts
-async function generateTOTP(secret, timeStep = 30, digits = 6, algorithm = "SHA-1", timestamp3 = Date.now()) {
-  const time4 = Math.floor(timestamp3 / 1e3 / timeStep);
-  const secretBytes = typeof secret === "string" ? base32Decode(secret) : secret;
-  const hmacResult = await hmac2(secretBytes, time4, algorithm);
-  const offset = hmacResult[hmacResult.length - 1] & 15;
-  const binary2 = (hmacResult[offset] & 127) << 24 | (hmacResult[offset + 1] & 255) << 16 | (hmacResult[offset + 2] & 255) << 8 | hmacResult[offset + 3] & 255;
-  const code = binary2 % Math.pow(10, digits);
-  return code.toString().padStart(digits, "0");
-}
-var init_totp = __esm({
-  "src/shared/utils/otp/protocols/totp.ts"() {
-    "use strict";
-    init_base2();
-  }
-});
-
-// src/shared/utils/otp/protocols/steam.ts
-async function generateSteamTOTP(secret, timeStep = 30) {
-  const time4 = Math.floor(Date.now() / 1e3 / timeStep);
-  const secretBytes = typeof secret === "string" ? base32Decode(secret) : secret;
-  const hmacResult = await hmac2(secretBytes, time4, "SHA-1");
-  const offset = hmacResult[hmacResult.length - 1] & 15;
-  let binary2 = (hmacResult[offset] & 127) << 24 | (hmacResult[offset + 1] & 255) << 16 | (hmacResult[offset + 2] & 255) << 8 | hmacResult[offset + 3] & 255;
-  let code = "";
-  for (let i2 = 0; i2 < 5; i2++) {
-    code += STEAM_CHARS.charAt(binary2 % STEAM_CHARS.length);
-    binary2 = Math.floor(binary2 / STEAM_CHARS.length);
-  }
-  return code;
-}
-var STEAM_CHARS;
-var init_steam = __esm({
-  "src/shared/utils/otp/protocols/steam.ts"() {
-    "use strict";
-    init_base2();
-    STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY";
-  }
-});
-
-// src/shared/utils/otp/protocols/hotp.ts
-async function generateHOTP(secret, counter, digits = 6, algorithm = "SHA-1") {
-  const secretBytes = typeof secret === "string" ? base32Decode(secret) : secret;
-  const hmacResult = await hmac2(secretBytes, counter, algorithm);
-  const offset = hmacResult[hmacResult.length - 1] & 15;
-  const binary2 = (hmacResult[offset] & 127) << 24 | (hmacResult[offset + 1] & 255) << 16 | (hmacResult[offset + 2] & 255) << 8 | hmacResult[offset + 3] & 255;
-  const code = binary2 % Math.pow(10, digits);
-  return code.toString().padStart(digits, "0");
-}
-var init_hotp = __esm({
-  "src/shared/utils/otp/protocols/hotp.ts"() {
-    "use strict";
-    init_base2();
-  }
-});
-
-// src/shared/utils/otp/protocols/blizzard.ts
-async function generateBlizzardOTP(secret, timeStep = 30, timestamp3 = Date.now()) {
-  return generateTOTP(secret, timeStep, 8, "SHA-1", timestamp3);
-}
-var init_blizzard = __esm({
-  "src/shared/utils/otp/protocols/blizzard.ts"() {
-    "use strict";
-    init_totp();
-  }
-});
-
-// src/shared/utils/otp/index.ts
-var otp_exports = {};
-__export(otp_exports, {
-  base32Decode: () => base32Decode,
-  buildOTPAuthURI: () => buildOTPAuthURI,
-  bytesToBase32: () => bytesToBase32,
-  generate: () => generate,
-  generateBlizzardOTP: () => generateBlizzardOTP,
-  generateHOTP: () => generateHOTP,
-  generateSteamTOTP: () => generateSteamTOTP,
-  generateTOTP: () => generateTOTP,
-  hmac: () => hmac2,
-  hmacSHA1: () => hmacSHA1,
-  normalizeOtpAccount: () => normalizeOtpAccount,
-  parseOTPAuthURI: () => parseOTPAuthURI,
-  resolveOtpType: () => resolveOtpType,
-  validateBase32Secret: () => validateBase32Secret
-});
-async function generate(secret, timeOrCounter = 30, digits = 6, algorithm = "SHA1", type = "totp", timestamp3 = Date.now()) {
-  if (type === "steam") {
-    return generateSteamTOTP(secret, timeOrCounter);
-  }
-  if (type === "blizzard") {
-    return generateBlizzardOTP(secret, timeOrCounter, timestamp3);
-  }
-  if (type === "hotp") {
-    return generateHOTP(secret, timeOrCounter, digits, algorithm);
-  }
-  return generateTOTP(secret, timeOrCounter, digits, algorithm, timestamp3);
-}
-function normalizeOtpAccount(item = {}) {
-  const type = resolveOtpType(item.type, item);
-  const normalized = { ...item, type };
-  if (type === "steam") {
-    normalized.digits = 5;
-    normalized.period = 30;
-    normalized.algorithm = "SHA1";
-  } else if (type === "blizzard") {
-    normalized.digits = 8;
-    normalized.period = 30;
-    normalized.algorithm = "SHA1";
-  } else {
-    let algo = (item.algorithm || "SHA1").toUpperCase().replace(/-/g, "");
-    if (!["SHA1", "SHA256", "SHA512"].includes(algo)) algo = "SHA1";
-    normalized.algorithm = algo;
-    let digits = parseInt(item.digits || "6");
-    if (isNaN(digits) || digits <= 0) digits = 6;
-    normalized.digits = digits;
-    let period = parseInt(item.period || "30");
-    if (isNaN(period) || period <= 0) period = 30;
-    normalized.period = period;
-  }
-  normalized.service = sanitizeInput(normalized.service || normalized.issuer || "Unknown", 50);
-  normalized.issuer = normalized.service;
-  let account = normalized.account || normalized.label || "Unknown";
-  if (typeof account === "string" && account.includes(":")) {
-    account = account.split(":").pop()?.trim() || account;
-  }
-  normalized.account = sanitizeInput(account, 100);
-  const rawSecret = normalized.secret || "";
-  normalized.secret = rawSecret.startsWith("nodeauth:") ? rawSecret : rawSecret.replace(/[\s=]/g, "").toUpperCase();
-  normalized.counter = parseInt(normalized.counter || "0");
-  if (isNaN(normalized.counter) || normalized.counter < 0) normalized.counter = 0;
-  return normalized;
-}
-function resolveOtpType(typeRaw, context = {}) {
-  const type = (typeRaw || context.type || "").toLowerCase().trim();
-  const algo = (context.algorithm || "").toUpperCase();
-  const service = (context.service || "").toUpperCase();
-  const digits = context.digits || 0;
-  if (type === "steam" || type === "steam guard" || algo === "STEAM" || digits === 5 && service.includes("STEAM")) {
-    return "steam";
-  }
-  if (["blizzard", "battle.net"].some((k2) => type.includes(k2) || service.includes(k2.toUpperCase()))) {
-    return "blizzard";
-  }
-  if (type === "totp") {
-    return "totp";
-  }
-  if (type === "hotp" || context.hasOwnProperty("counter") && context.counter !== null && context.counter !== void 0) {
-    return "hotp";
-  }
-  return "totp";
-}
-function parseOTPAuthURI(uri) {
-  try {
-    if (!uri || typeof uri !== "string" || uri.length > 2e3) return null;
-    if (uri.startsWith("steam://")) {
-      const secret2 = uri.replace("steam://", "").replace(/[\s=]/g, "").toUpperCase();
-      if (!validateBase32Secret(secret2)) return null;
-      return {
-        type: "steam",
-        label: "Steam",
-        issuer: "Steam",
-        account: "Steam",
-        secret: secret2,
-        digits: 5,
-        period: 30,
-        algorithm: "SHA1",
-        counter: 0
-      };
-    }
-    const url = new URL(uri);
-    if (url.protocol !== "otpauth:") return null;
-    let typeHeader = url.host || url.hostname;
-    if (!typeHeader && url.pathname.startsWith("//")) {
-      typeHeader = url.pathname.substring(2).split("/")[0];
-    }
-    typeHeader = (typeHeader || "").toLowerCase();
-    const params = new URLSearchParams(url.search);
-    const secret = params.get("secret");
-    if (!validateBase32Secret(secret)) return null;
-    const label = decodeURIComponent(url.pathname.substring(1));
-    const [issuer, account] = label.includes(":") ? label.split(":", 2) : ["", label];
-    const issuerName = params.get("issuer") || issuer;
-    const digitsVal = parseInt(params.get("digits") || "0");
-    const periodVal = parseInt(params.get("period") || "30");
-    const counterVal = parseInt(params.get("counter") || "0");
-    return normalizeOtpAccount({
-      service: issuerName,
-      account: account || label,
-      label,
-      secret,
-      type: typeHeader,
-      digits: digitsVal,
-      period: periodVal,
-      counter: counterVal,
-      algorithm: params.get("algorithm") || "SHA1"
-    });
-  } catch {
-    return null;
-  }
-}
-function buildOTPAuthURI(data) {
-  const normalized = normalizeOtpAccount(data);
-  const { service, account, secret, type, algorithm, digits, period, counter } = normalized;
-  const label = account ? encodeURIComponent(`${service}:${account}`) : encodeURIComponent(service);
-  const issuer = encodeURIComponent(service);
-  if (type === "hotp") {
-    let uri = `otpauth://hotp/${label}?secret=${secret}&counter=${counter}`;
-    if (service) uri += `&issuer=${issuer}`;
-    if (algorithm !== "SHA1") uri += `&algorithm=${algorithm}`;
-    if (digits !== 6) uri += `&digits=${digits}`;
-    return uri;
-  }
-  if (type === "steam") {
-    return `otpauth://steam/${label}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=5`;
-  }
-  if (type === "blizzard") {
-    return `otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=8&period=30`;
-  }
-  return `otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=${algorithm}&digits=${digits}&period=${period}`;
-}
-var init_otp = __esm({
-  "src/shared/utils/otp/index.ts"() {
-    "use strict";
-    init_common();
-    init_base2();
-    init_totp();
-    init_steam();
-    init_hotp();
-    init_blizzard();
-  }
-});
-
 // node_modules/drizzle-orm/entity.js
 var entityKind = /* @__PURE__ */ Symbol.for("drizzle:entityKind");
 function is(value, type) {
@@ -20971,8 +20517,141 @@ function setHeaders(ctx, headersToSet) {
   });
 }
 
+// src/app/config.ts
+var SECURITY_CONFIG = {
+  MAX_LOGIN_ATTEMPTS: 5,
+  LOCKOUT_TIME: 15 * 60 * 1e3,
+  JWT_EXPIRY: 24 * 60 * 60,
+  // 24小时
+  MAX_INPUT_LENGTH: 100,
+  MIN_EXPORT_PASSWORD_LENGTH: 12,
+  MAX_OAUTH_ATTEMPTS: 3,
+  OAUTH_LOCKOUT_TIME: 10 * 60 * 1e3,
+  MAX_FILE_SIZE: 10 * 1024 * 1024
+};
+var CSP_POLICY = {
+  // 脚本源: 允许本站、内联脚本(Vue必需) 以及 Cloudflare 统计脚本
+  SCRIPTS: [
+    "'self'",
+    "'unsafe-inline'",
+    "'unsafe-eval'",
+    "'wasm-unsafe-eval'",
+    "https://static.cloudflareinsights.com"
+  ],
+  // 图片源: 允许本站、GitHub 头像、NodeLoc 头像、WalletConnect 链上资产Logo
+  IMAGES: [
+    "'self'",
+    "data:",
+    "blob:",
+    "https://avatars.githubusercontent.com",
+    "https://t.me",
+    // Telegram User Avatars
+    "https://*.telesco.pe",
+    // Telegram Avatar CDN
+    "https://www.nodeloc.com",
+    "https://lh3.googleusercontent.com",
+    // Google User Avatars
+    "https://www.google.com",
+    // Google Favicon API
+    "https://*.gstatic.com",
+    // Google 静态资源 (包括所有 t 系列 CDN)
+    "https://icons.bitwarden.net",
+    // Bitwarden Icon API
+    "https://favicon.im",
+    // Favicon.im API
+    "https://explorer-api.walletconnect.com",
+    // 允许加载各种Web3钱包Logo图库
+    "https://*.blizzard.com",
+    "https://*.battle.net"
+  ],
+  CONNECT: [
+    "'self'",
+    "https://api.github.com",
+    "https://github.com",
+    "https://cloudflareinsights.com",
+    "https://static.cloudflareinsights.com",
+    "https://accounts.google.com",
+    "https://www.googleapis.com",
+    "https://login.microsoftonline.com",
+    "https://graph.microsoft.com",
+    "https://openapi.baidu.com",
+    "https://pan.baidu.com",
+    "https://api.dropboxapi.com",
+    "https://content.dropboxapi.com",
+    "https://www.dropbox.com",
+    // WalletConnect (External) - Only needed if Proxy is OFF
+    "wss://relay.walletconnect.com",
+    "wss://relay.walletconnect.org",
+    "https://rpc.walletconnect.com",
+    "https://verify.walletconnect.com",
+    "https://verify.walletconnect.org"
+  ],
+  // 框架源: WalletConnect 防钓鱼 Verify API 必需挂载 iframe
+  FRAMES: [
+    "'self'",
+    "https://verify.walletconnect.com",
+    "https://verify.walletconnect.org"
+  ]
+};
+var getEffectiveCSP = (env) => {
+  const isProxyOn = env.OAUTH_WALLETCONNECT_SELF_PROXY === "true";
+  const connectSet = /* @__PURE__ */ new Set([...CSP_POLICY.CONNECT]);
+  const imagesSet = /* @__PURE__ */ new Set([...CSP_POLICY.IMAGES]);
+  const framesSet = /* @__PURE__ */ new Set([...CSP_POLICY.FRAMES]);
+  connectSet.add("https://cloudflare-eth.com");
+  if (env.OAUTH_WALLETCONNECT_RPC_URL) {
+    try {
+      const rpcOrigin = new URL(env.OAUTH_WALLETCONNECT_RPC_URL).origin;
+      connectSet.add(rpcOrigin);
+    } catch (e2) {
+    }
+  }
+  const connect = Array.from(connectSet);
+  const images = Array.from(imagesSet);
+  const frames = Array.from(framesSet);
+  if (isProxyOn) {
+    const externalWC = [
+      "wss://relay.walletconnect.com",
+      "wss://relay.walletconnect.org",
+      "https://rpc.walletconnect.com",
+      "https://verify.walletconnect.com",
+      "https://verify.walletconnect.org",
+      "https://explorer-api.walletconnect.com"
+    ];
+    return {
+      defaultSrc: ["'self'"],
+      scriptSrc: CSP_POLICY.SCRIPTS,
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: images.filter((d2) => !externalWC.includes(d2)),
+      connectSrc: connect.filter((d2) => !externalWC.includes(d2)),
+      fontSrc: ["'self'", "data:"],
+      frameSrc: frames.filter((d2) => !externalWC.includes(d2)),
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: ["'none'"]
+    };
+  }
+  return {
+    defaultSrc: ["'self'"],
+    scriptSrc: CSP_POLICY.SCRIPTS,
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: images,
+    connectSrc: connect,
+    fontSrc: ["'self'", "data:"],
+    frameSrc: frames,
+    workerSrc: ["'self'", "blob:"],
+    objectSrc: ["'none'"]
+  };
+};
+var AppError = class extends Error {
+  statusCode;
+  constructor(message, statusCode = 500) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+  }
+};
+
 // src/app/index.ts
-init_config();
 init_crypto();
 
 // node_modules/hono/dist/utils/cookie.js
@@ -21144,15 +20823,8 @@ var deleteCookie = (c2, name, opt) => {
   return deletedCookie;
 };
 
-// src/features/auth/authRoutes.ts
-init_config();
-
 // src/shared/middleware/auth.ts
-init_config();
 init_crypto();
-
-// src/features/auth/sessionService.ts
-init_config();
 
 // src/shared/db/schema/sqlite.ts
 var sqlite_exports = {};
@@ -22879,7 +22551,6 @@ function parseUserAgent(ua) {
 }
 
 // src/shared/utils/masking.ts
-import { Buffer as Buffer2 } from "node:buffer";
 var maskUserId = (id) => {
   if (!id) return "***";
   if (id.includes("@")) {
@@ -22910,63 +22581,6 @@ var maskIp = (ip) => {
   }
   return ip;
 };
-var ALGORITHM = "AES-GCM";
-async function deriveMaskingKey(salt) {
-  const encoder6 = new TextEncoder();
-  const saltBuffer = typeof salt === "string" ? encoder6.encode(salt) : salt;
-  const hashBuffer = await crypto.subtle.digest("SHA-256", new Uint8Array(saltBuffer));
-  return Buffer2.from(hashBuffer);
-}
-async function maskSecret(secretText, maskingKey) {
-  if (secretText == null) {
-    throw new Error("Cannot mask null/undefined secret");
-  }
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const keyUsage = await crypto.subtle.importKey(
-    "raw",
-    new Uint8Array(maskingKey),
-    ALGORITHM,
-    false,
-    ["encrypt"]
-  );
-  const encoder6 = new TextEncoder();
-  const dataBuffer = encoder6.encode(secretText);
-  const ciphertextBuffer = await crypto.subtle.encrypt(
-    { name: ALGORITHM, iv },
-    keyUsage,
-    dataBuffer
-  );
-  const combined = new Uint8Array(iv.length + ciphertextBuffer.byteLength);
-  combined.set(iv, 0);
-  combined.set(new Uint8Array(ciphertextBuffer), iv.length);
-  return "nodeauth:" + Buffer2.from(combined).toString("base64");
-}
-async function unmaskSecret(maskedData, maskingKey) {
-  if (!maskedData.startsWith("nodeauth:")) {
-    throw new Error("invalid_masking_prefix");
-  }
-  const payload = maskedData.slice("nodeauth:".length);
-  const combined = Buffer2.from(payload, "base64");
-  if (combined.length < 12) {
-    throw new Error("invalid_payload_length");
-  }
-  const iv = combined.subarray(0, 12);
-  const ciphertext = combined.subarray(12);
-  const keyUsage = await crypto.subtle.importKey(
-    "raw",
-    new Uint8Array(maskingKey),
-    ALGORITHM,
-    false,
-    ["decrypt"]
-  );
-  const decryptedBuffer = await crypto.subtle.decrypt(
-    { name: ALGORITHM, iv },
-    keyUsage,
-    ciphertext
-  );
-  const decoder2 = new TextDecoder();
-  return decoder2.decode(decryptedBuffer);
-}
 
 // src/features/auth/sessionService.ts
 var SessionService = class {
@@ -23137,7 +22751,6 @@ async function authMiddleware(c2, next) {
 }
 
 // src/shared/middleware/rateLimitMiddleware.ts
-init_config();
 init_logger();
 init_request();
 var rateLimit = (options) => {
@@ -23227,12 +22840,6 @@ var resetRateLimit = async (c2, key) => {
   }
 };
 
-// src/features/auth/authRoutes.ts
-init_config();
-
-// src/features/auth/providers/index.ts
-init_config();
-
 // src/features/auth/providers/baseOAuthProvider.ts
 var BaseOAuthProvider = class {
   env;
@@ -23242,7 +22849,6 @@ var BaseOAuthProvider = class {
 };
 
 // src/features/auth/providers/githubProvider.ts
-init_config();
 var GitHubProvider = class extends BaseOAuthProvider {
   id = "github";
   name = "GitHub";
@@ -23322,7 +22928,6 @@ var GitHubProvider = class extends BaseOAuthProvider {
 };
 
 // src/features/auth/providers/cloudflareAccessProvider.ts
-init_config();
 function base64UrlEncode2(str) {
   let binary2 = "";
   const len = str.byteLength;
@@ -23435,7 +23040,6 @@ var CloudflareAccessProvider = class extends BaseOAuthProvider {
 };
 
 // src/features/auth/providers/nodeLocProvider.ts
-init_config();
 var NodeLocProvider = class extends BaseOAuthProvider {
   id = "nodeloc";
   name = "NodeLoc";
@@ -23509,7 +23113,6 @@ var NodeLocProvider = class extends BaseOAuthProvider {
 };
 
 // src/features/auth/providers/giteeProvider.ts
-init_config();
 var GiteeProvider = class extends BaseOAuthProvider {
   id = "gitee";
   name = "Gitee";
@@ -23589,7 +23192,6 @@ var GiteeProvider = class extends BaseOAuthProvider {
 };
 
 // src/features/auth/providers/telegramProvider.ts
-init_config();
 var TelegramProvider = class extends BaseOAuthProvider {
   id = "telegram";
   name = "Telegram";
@@ -23667,7 +23269,6 @@ var TelegramProvider = class extends BaseOAuthProvider {
 };
 
 // src/features/auth/providers/googleProvider.ts
-init_config();
 var GoogleProvider = class extends BaseOAuthProvider {
   id = "google";
   name = "Google";
@@ -23834,7 +23435,6 @@ function getAvailableProviders(env) {
 }
 
 // src/features/auth/authService.ts
-init_config();
 init_crypto();
 
 // src/shared/db/repositories/emergencyRepository.ts
@@ -23992,7 +23592,6 @@ var AuthService = class {
 };
 
 // src/features/auth/webAuthnService.ts
-init_config();
 init_crypto();
 
 // node_modules/@simplewebauthn/server/esm/helpers/iso/isoBase64URL.js
@@ -39135,7 +38734,6 @@ var WebAuthnService = class {
 };
 
 // src/features/auth/web3WalletAuthService.ts
-init_config();
 init_crypto();
 
 // node_modules/viem/_esm/utils/getAction.js
@@ -46886,8 +46484,8 @@ auth.get("/me", authMiddleware, async (c2) => {
   const isEmergencyConfirmed = await repository.isEmergencyConfirmed();
   const encryptionKey = !isEmergencyConfirmed ? c2.env.ENCRYPTION_KEY : void 0;
   const license = !isEmergencyConfirmed ? c2.env.NODEAUTH_LICENSE : void 0;
-  const { generateDeviceKey: generateDeviceKey2, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
-  const deviceKey = await generateDeviceKey2(user.email || user.id, c2.env.JWT_SECRET || "");
+  const { generateDeviceKey: generateDeviceKey3, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
+  const deviceKey = await generateDeviceKey3(user.email || user.id, c2.env.JWT_SECRET || "");
   const publicKey = c2.req.header("X-Public-Key");
   let finalDeviceKey = deviceKey;
   if (publicKey && deviceKey) {
@@ -47155,12 +46753,16 @@ auth.post("/extension-session", authMiddleware, rateLimit({
 });
 var authRoutes_default = auth;
 
-// src/features/vault/vaultService.ts
-init_config();
-
 // src/shared/db/db.ts
 init_crypto();
-init_common();
+
+// src/shared/utils/common.ts
+function sanitizeInput(input, maxLength = SECURITY_CONFIG.MAX_INPUT_LENGTH) {
+  if (typeof input !== "string") return "";
+  return input.replace(/[<>"'&\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]/g, "").trim().substring(0, maxLength);
+}
+
+// src/shared/db/db.ts
 init_logger();
 async function encryptField(data, key) {
   const encrypted = await encryptData(data, key);
@@ -47177,7 +46779,8 @@ async function decryptField(encryptedStr, key) {
 }
 async function batchInsertVaultItems(dbClient, items, key, createdBy, startSortOrder = 0) {
   const preparedItems = await Promise.all(items.map(async (item, index2) => {
-    const normalizedSecret = (item.secret || "").replace(/\s/g, "").toUpperCase();
+    const rawSecret = item.secret || "";
+    const normalizedSecret = rawSecret.startsWith("nodeauth:") ? rawSecret : rawSecret.replace(/[\s=]/g, "").toUpperCase();
     const secretEncrypted = await encryptField(normalizedSecret, key);
     return {
       id: crypto.randomUUID(),
@@ -47225,8 +46828,138 @@ async function batchInsertVaultItems(dbClient, items, key, createdBy, startSortO
 
 // src/features/vault/vaultService.ts
 init_crypto();
-init_otp();
-import { Buffer as Buffer3 } from "node:buffer";
+
+// src/shared/utils/otp/base.ts
+var BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+function validateBase32Secret(secret) {
+  if (!secret || typeof secret !== "string") return false;
+  const cleaned = secret.replace(/\s/g, "").toUpperCase();
+  return /^[A-Z2-7]+=*$/.test(cleaned) && cleaned.length >= 8;
+}
+function bytesToBase32(bytes) {
+  let bits = 0, value = 0, output = "";
+  for (let i2 = 0; i2 < bytes.length; i2++) {
+    value = value << 8 | bytes[i2];
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_CHARS[value >>> bits - 5 & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += BASE32_CHARS[value << 5 - bits & 31];
+  }
+  return output;
+}
+
+// src/shared/utils/otp/index.ts
+function normalizeOtpAccount(item = {}) {
+  const type = resolveOtpType(item.type, item);
+  const normalized = { ...item, type };
+  if (type === "steam") {
+    normalized.digits = 5;
+    normalized.period = 30;
+    normalized.algorithm = "SHA1";
+  } else if (type === "blizzard") {
+    normalized.digits = 8;
+    normalized.period = 30;
+    normalized.algorithm = "SHA1";
+  } else {
+    let algo = (item.algorithm || "SHA1").toUpperCase().replace(/-/g, "");
+    if (!["SHA1", "SHA256", "SHA512"].includes(algo)) algo = "SHA1";
+    normalized.algorithm = algo;
+    let digits = parseInt(item.digits || "6");
+    if (isNaN(digits) || digits <= 0) digits = 6;
+    normalized.digits = digits;
+    let period = parseInt(item.period || "30");
+    if (isNaN(period) || period <= 0) period = 30;
+    normalized.period = period;
+  }
+  normalized.service = sanitizeInput(normalized.service || normalized.issuer || "Unknown", 50);
+  normalized.issuer = normalized.service;
+  let account = normalized.account || normalized.label || "Unknown";
+  if (typeof account === "string" && account.includes(":")) {
+    account = account.split(":").pop()?.trim() || account;
+  }
+  normalized.account = sanitizeInput(account, 100);
+  const rawSecret = normalized.secret || "";
+  normalized.secret = rawSecret.startsWith("nodeauth:") ? rawSecret : rawSecret.replace(/[\s=]/g, "").toUpperCase();
+  normalized.counter = parseInt(normalized.counter || "0");
+  if (isNaN(normalized.counter) || normalized.counter < 0) normalized.counter = 0;
+  normalized.category = normalized.category ? sanitizeInput(normalized.category, 30) : "";
+  return normalized;
+}
+function resolveOtpType(typeRaw, context = {}) {
+  const type = (typeRaw || context.type || "").toLowerCase().trim();
+  const algo = (context.algorithm || "").toUpperCase();
+  const service = (context.service || "").toUpperCase();
+  const digits = context.digits || 0;
+  if (type === "steam" || type === "steam guard" || algo === "STEAM" || digits === 5 && service.includes("STEAM")) {
+    return "steam";
+  }
+  if (["blizzard", "battle.net"].some((k2) => type.includes(k2) || service.includes(k2.toUpperCase()))) {
+    return "blizzard";
+  }
+  if (type === "totp") {
+    return "totp";
+  }
+  if (type === "hotp" || context.hasOwnProperty("counter") && context.counter !== null && context.counter !== void 0) {
+    return "hotp";
+  }
+  return "totp";
+}
+function parseOTPAuthURI(uri) {
+  try {
+    if (!uri || typeof uri !== "string" || uri.length > 2e3) return null;
+    if (uri.startsWith("steam://")) {
+      const secret2 = uri.replace("steam://", "").replace(/[\s=]/g, "").toUpperCase();
+      if (!validateBase32Secret(secret2)) return null;
+      return {
+        type: "steam",
+        label: "Steam",
+        issuer: "Steam",
+        account: "Steam",
+        secret: secret2,
+        digits: 5,
+        period: 30,
+        algorithm: "SHA1",
+        counter: 0
+      };
+    }
+    const url = new URL(uri);
+    if (url.protocol !== "otpauth:") return null;
+    let typeHeader = url.host || url.hostname;
+    if (!typeHeader && url.pathname.startsWith("//")) {
+      typeHeader = url.pathname.substring(2).split("/")[0];
+    }
+    typeHeader = (typeHeader || "").toLowerCase();
+    const params = new URLSearchParams(url.search);
+    const secret = params.get("secret");
+    if (!validateBase32Secret(secret)) return null;
+    const label = decodeURIComponent(url.pathname.substring(1));
+    const [issuer, account] = label.includes(":") ? label.split(":", 2) : ["", label];
+    const issuerName = params.get("issuer") || issuer;
+    const digitsVal = parseInt(params.get("digits") || "0");
+    const periodVal = parseInt(params.get("period") || "30");
+    const counterVal = parseInt(params.get("counter") || "0");
+    return normalizeOtpAccount({
+      service: issuerName,
+      account: account || label,
+      label,
+      secret,
+      type: typeHeader,
+      digits: digitsVal,
+      period: periodVal,
+      counter: counterVal,
+      algorithm: params.get("algorithm") || "SHA1"
+    });
+  } catch {
+    return null;
+  }
+}
+
+// src/features/vault/vaultService.ts
+import { Buffer as Buffer2 } from "node:buffer";
 var VaultService = class {
   repository;
   env;
@@ -47238,18 +46971,6 @@ var VaultService = class {
       throw new AppError("missing_encryption_key", 500);
     }
     this.encryptionKey = env.ENCRYPTION_KEY;
-  }
-  async wrapZeroKnowledgeSecret(userId, sseEncryptedSecret) {
-    if (!sseEncryptedSecret) return { secret: sseEncryptedSecret, hasError: false };
-    try {
-      const plain = await decryptField(sseEncryptedSecret, this.encryptionKey);
-      if (plain === null) return { secret: null, hasError: true };
-      const salt = await generateDeviceKey(userId, this.env.JWT_SECRET || "");
-      const maskingKey = await deriveMaskingKey(salt);
-      return { secret: await maskSecret(plain, maskingKey), hasError: false };
-    } catch (e2) {
-      return { secret: null, hasError: true };
-    }
   }
   /**
    * 获取所有账户 (解密)
@@ -47272,8 +46993,14 @@ var VaultService = class {
     let hasDecryptionError = false;
     const decryptedItems = await Promise.all(items.map(async (item) => {
       const { createdBy: _c, updatedBy: _u, ...rest } = item;
-      const { secret, hasError } = await this.wrapZeroKnowledgeSecret(userId, item.secret);
-      if (hasError) hasDecryptionError = true;
+      let secret = null;
+      if (item.secret) {
+        try {
+          secret = await decryptField(item.secret, this.encryptionKey);
+        } catch {
+          hasDecryptionError = true;
+        }
+      }
       return {
         ...rest,
         secret
@@ -47324,19 +47051,11 @@ var VaultService = class {
     const normalized = normalizeOtpAccount(data);
     const { service, account, algorithm, digits, period, type, counter, category } = normalized;
     let secret = normalized.secret;
-    if (secret && secret.startsWith("nodeauth:")) {
-      const salt = await generateDeviceKey(userId, this.env.JWT_SECRET || "");
-      const maskingKey = await deriveMaskingKey(salt);
-      try {
-        secret = await unmaskSecret(secret, maskingKey);
-      } catch (e2) {
-        throw new AppError("invalid_secret_format", 400);
-      }
-    }
     if (!service || !account || !secret) {
       throw new AppError("invalid_secret_format", 400);
     }
-    if (type !== "steam" && !validateBase32Secret(secret)) {
+    const isZeroKnowledge = secret.startsWith("nodeauth:");
+    if (type !== "steam" && !isZeroKnowledge && !validateBase32Secret(secret)) {
       throw new AppError("invalid_secret_format", 400);
     }
     const existing = await this.repository.findByServiceAccountAny(service, account);
@@ -47381,11 +47100,11 @@ var VaultService = class {
     const { createdBy: _c, updatedBy: _u, ...restCreated } = created;
     return {
       ...restCreated,
-      secret: (await this.wrapZeroKnowledgeSecret(userId, encryptedSecret)).secret
+      secret
     };
   }
   /**
-   * HOTP 原子递增并获取新验证码
+   * HOTP 原子递增 (不涉及明文)
    */
   async incrementCounter(id, expectedUpdatedAt) {
     const item = await this.repository.findById(id);
@@ -47394,10 +47113,6 @@ var VaultService = class {
       throw new AppError("\u8D26\u53F7\u7C7B\u578B\u4E0D\u652F\u6301\u624B\u52A8\u9012\u589E", 400);
     }
     const currentCounter = item.counter || 0;
-    const secret = await decryptField(item.secret, this.encryptionKey);
-    if (!secret) throw new AppError("decrypt_failed", 500);
-    const { generate: generate2 } = await Promise.resolve().then(() => (init_otp(), otp_exports));
-    const code = await generate2(secret, currentCounter, item.digits || 6, item.algorithm || "SHA1", "hotp");
     const newCounter = currentCounter + 1;
     const updated = await this.repository.update(id, {
       counter: newCounter,
@@ -47408,7 +47123,6 @@ var VaultService = class {
     }
     return {
       id,
-      code,
       counter: newCounter
     };
   }
@@ -47420,15 +47134,8 @@ var VaultService = class {
     let encryptedSecret;
     if (data.secret !== void 0) {
       let finalSecret = newSecret;
-      if (finalSecret && finalSecret.startsWith("nodeauth:")) {
-        const salt = await generateDeviceKey(userId, this.env.JWT_SECRET || "");
-        const maskingKey = await deriveMaskingKey(salt);
-        try {
-          finalSecret = await unmaskSecret(finalSecret, maskingKey);
-        } catch (e2) {
-        }
-      }
-      if (!finalSecret || normType !== "steam" && !validateBase32Secret(finalSecret)) {
+      const isZeroKnowledge = finalSecret && finalSecret.startsWith("nodeauth:");
+      if (!finalSecret || !isZeroKnowledge && normType !== "steam" && !validateBase32Secret(finalSecret)) {
         throw new AppError("invalid_secret_format", 400);
       }
       encryptedSecret = await encryptField(finalSecret, this.encryptionKey);
@@ -47463,7 +47170,7 @@ var VaultService = class {
     return {
       ...restExisting,
       ...updatedItem,
-      secret: (await this.wrapZeroKnowledgeSecret(userId, encryptedSecret)).secret
+      secret: newSecret || await decryptField(encryptedSecret, this.encryptionKey)
     };
   }
   /**
@@ -47484,87 +47191,6 @@ var VaultService = class {
     if (!ids || ids.length === 0) throw new AppError("no_account_ids", 400);
     const count = await this.repository.batchDelete(ids);
     return { count };
-  }
-  /**
-   * 导出前将密文完全还原为明文（SSE 解密 + 零知识解封装）
-   */
-  async plainSecretForExport(userId, sseEncryptedSecret) {
-    if (!sseEncryptedSecret) return null;
-    try {
-      const plain = await decryptField(sseEncryptedSecret, this.encryptionKey);
-      if (!plain) return null;
-      if (plain.startsWith("nodeauth:")) {
-        const salt = await generateDeviceKey(userId, this.env.JWT_SECRET || "");
-        const maskingKey = await deriveMaskingKey(salt);
-        return await unmaskSecret(plain, maskingKey);
-      }
-      return plain;
-    } catch (e2) {
-      return null;
-    }
-  }
-  /**
-   * 处理导出
-   */
-  async exportAccounts(userId, type, password) {
-    const SECURITY_CONFIG2 = { MIN_EXPORT_PASSWORD_LENGTH: 5 };
-    if (!["encrypted", "json", "2fas", "text"].includes(type)) {
-      throw new AppError("export_type_invalid", 400);
-    }
-    if (type === "encrypted") {
-      if (!password || password.length < SECURITY_CONFIG2.MIN_EXPORT_PASSWORD_LENGTH) {
-        throw new AppError("export_password_length", 400);
-      }
-    }
-    const rawItems = await this.getAllAccounts();
-    const plainItems = await Promise.all(rawItems.map(async (item) => {
-      const { createdBy: _c, updatedBy: _u, ...rest } = item;
-      return {
-        ...rest,
-        secret: await this.plainSecretForExport(userId, item.secret)
-      };
-    }));
-    const timestamp3 = (/* @__PURE__ */ new Date()).toISOString();
-    const baseData = { version: "2.0", app: "nodeauth", timestamp: timestamp3 };
-    if (type === "encrypted") {
-      const exportData = { ...baseData, encrypted: true, accounts: plainItems };
-      const encryptedContent = await encryptData(exportData, password);
-      return {
-        data: { ...baseData, encrypted: true, data: encryptedContent, note: "This file is encrypted with your export password. Keep it safe!" },
-        isText: false
-      };
-    } else if (type === "json") {
-      return { data: { ...baseData, encrypted: false, accounts: plainItems }, isText: false };
-    } else if (type === "2fas") {
-      const services = plainItems.map((acc) => ({
-        name: acc.service,
-        secret: acc.secret,
-        otp: {
-          tokenType: "TOTP",
-          issuer: acc.service,
-          account: acc.account,
-          digits: acc.digits,
-          period: acc.period,
-          algorithm: (acc.algorithm || "SHA1").replace("SHA-", "SHA"),
-          counter: 0
-        },
-        order: { position: 0 }
-      }));
-      return { data: { schemaVersion: 4, appOrigin: "export", services }, isText: false };
-    } else if (type === "text") {
-      const lines = plainItems.map((acc) => {
-        return buildOTPAuthURI({
-          service: acc.service,
-          account: acc.account,
-          secret: acc.secret ?? "",
-          algorithm: acc.algorithm ?? void 0,
-          digits: acc.digits ?? void 0,
-          period: acc.period ?? void 0
-        });
-      });
-      return { data: lines.join("\n"), isText: true };
-    }
-    throw new AppError("export_type_invalid", 500);
   }
   /**
    * 处理导入
@@ -47656,7 +47282,8 @@ var VaultService = class {
     for (const raw2 of rawAccounts) {
       const acc = normalizeOtpAccount(raw2);
       const { service, account, secret, type: type2 } = acc;
-      const isValidSecret = type2 === "steam" ? !!secret : validateBase32Secret(secret);
+      const isZeroKnowledge = secret && secret.startsWith("nodeauth:");
+      const isValidSecret = type2 === "steam" ? !!secret : isZeroKnowledge || validateBase32Secret(secret);
       if (service && account && isValidSecret) {
         const signature = this.normalizeSignature(service, account);
         if (seenInBatch.has(signature)) continue;
@@ -47762,7 +47389,7 @@ var VaultService = class {
       }
       const { deviceSecret } = await restoreRes.json();
       if (!deviceSecret) throw new AppError("invalid_restore_response", 500);
-      return bytesToBase32(new Uint8Array(Buffer3.from(deviceSecret, "hex")));
+      return bytesToBase32(new Uint8Array(Buffer2.from(deviceSecret, "hex")));
     } catch (err) {
       if (err instanceof AppError) throw err;
       console.error("[BlizzardRestore] Unexpected flow error:", err.message || err);
@@ -47856,7 +47483,6 @@ var VaultService = class {
 };
 
 // src/features/vault/trashService.ts
-init_config();
 var TrashService = class {
   repository;
   env;
@@ -48218,7 +47844,6 @@ var VaultRepository = class {
 };
 
 // src/features/vault/vaultRoutes.ts
-init_otp();
 var vault5 = new Hono2();
 var getService2 = (c2) => {
   const repo = new VaultRepository(c2.env.DB);
@@ -48345,19 +47970,6 @@ vault5.post("/batch-delete", async (c2) => {
   const result = await service.batchDeleteAccounts(ids);
   return c2.json({ success: true, count: result.count });
 });
-vault5.post("/export", rateLimit({
-  windowMs: 60 * 1e3,
-  max: 5
-}), async (c2) => {
-  const user = c2.get("user");
-  const service = getService2(c2);
-  const { type, password } = await c2.req.json();
-  const result = await service.exportAccounts(user.email || user.id, type, password);
-  if (result.isText) {
-    return c2.text(result.data);
-  }
-  return c2.json(result.data);
-});
 vault5.post("/import", rateLimit({
   windowMs: 60 * 1e3,
   max: 5
@@ -48422,9 +48034,6 @@ vault5.post("/migrate-crypto", async (c2) => {
   return c2.json({ success: true, message: "\u4E0D\u518D\u652F\u6301\u65E7\u7248\u76D0\u503C\u8FC1\u79FB\u903B\u8F91\uFF0C\u6240\u6709\u6570\u636E\u9ED8\u8BA4\u5DF2\u4F7F\u7528\u65B0\u7248\u903B\u8F91", migrated: 0, remaining: 0 });
 });
 var vaultRoutes_default = vault5;
-
-// src/features/backup/backupService.ts
-init_config();
 
 // src/shared/db/repositories/backupRepository.ts
 var BackupRepository = class {
@@ -56196,7 +55805,6 @@ var TelegramProvider2 = class {
 };
 
 // src/features/backup/providers/googleDriveProvider.ts
-init_config();
 var GoogleDriveProvider = class {
   clientId;
   clientSecret;
@@ -56374,7 +55982,6 @@ var GoogleDriveProvider = class {
 };
 
 // src/features/backup/providers/oneDriveProvider.ts
-init_config();
 var OneDriveProvider = class {
   refreshToken;
   folderId = null;
@@ -56546,7 +56153,6 @@ var OneDriveProvider = class {
 };
 
 // src/features/backup/providers/baiduNetdiskProvider.ts
-init_config();
 var BaiduNetdiskProvider = class {
   clientId;
   clientSecret;
@@ -56724,7 +56330,6 @@ var BaiduNetdiskProvider = class {
 };
 
 // src/features/backup/providers/dropboxProvider.ts
-init_config();
 var DropboxProvider = class {
   clientId;
   clientSecret;
@@ -57161,7 +56766,6 @@ var EmailProvider = class {
 };
 
 // src/features/backup/providers/githubProvider.ts
-init_config();
 var GithubProvider = class {
   token;
   owner;
@@ -57699,7 +57303,6 @@ var BackupService = class {
 
 // src/features/backup/backupRoutes.ts
 init_crypto();
-init_config();
 init_logger();
 var backups = new Hono2();
 var isSecureContext2 = (c2) => c2.env.ENVIRONMENT !== "development";
@@ -58860,7 +58463,6 @@ health.get("/health-check", async (c2) => {
 var healthRoutes_default = health;
 
 // src/features/emergency/emergencyRoutes.ts
-init_config();
 init_request();
 var emergency = new Hono2();
 emergency.post("/confirm", authMiddleware, rateLimit({
@@ -58884,7 +58486,6 @@ emergency.post("/confirm", authMiddleware, rateLimit({
 var emergencyRoutes_default = emergency;
 
 // src/features/auth/wcProxyRoutes.ts
-init_config();
 var wcProxy = new Hono2();
 var proxyRequest = async (targetHost, targetPath, c2) => {
   const url = new URL(c2.req.url);
