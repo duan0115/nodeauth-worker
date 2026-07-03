@@ -114,11 +114,13 @@ __export(crypto_exports, {
   encryptBackupFile: () => encryptBackupFile,
   encryptData: () => encryptData,
   encryptWithRSAPublicKey: () => encryptWithRSAPublicKey,
+  generateAllDeviceKeys: () => generateAllDeviceKeys,
   generateDeviceKey: () => generateDeviceKey,
   generatePKCE: () => generatePKCE,
   generateSecureJWT: () => generateSecureJWT,
   getDerivedEncryptionKey: () => getDerivedEncryptionKey,
   getDerivedLicenseKey: () => getDerivedLicenseKey,
+  getSingleTenantId: () => getSingleTenantId,
   initializeEnv: () => initializeEnv,
   normalizeSecret: () => normalizeSecret,
   verifySecureJWT: () => verifySecureJWT
@@ -419,6 +421,27 @@ async function encryptWithRSAPublicKey(data, publicKeyBase64) {
     console.warn("[Crypto] RSA encryption failed, falling back to raw data:", e2);
     return data;
   }
+}
+function getSingleTenantId(allowedUsersStr) {
+  if (!allowedUsersStr) return "nodeauth_single_tenant";
+  const firstUser = allowedUsersStr.split(",")[0].trim();
+  return firstUser || "nodeauth_single_tenant";
+}
+async function generateAllDeviceKeys(allowedUsersStr, secret) {
+  const tenants = ["nodeauth_single_tenant"];
+  if (allowedUsersStr) {
+    const users = allowedUsersStr.split(",").map((u2) => u2.trim()).filter((u2) => !!u2);
+    for (const u2 of users) {
+      if (!tenants.includes(u2)) {
+        tenants.push(u2);
+      }
+    }
+  }
+  const keys = [];
+  for (const t2 of tenants) {
+    keys.push(await generateDeviceKey(t2, secret));
+  }
+  return keys.join(",");
 }
 var CRYPTO_CONFIG, derivedKeyCache;
 var init_crypto = __esm({
@@ -23521,7 +23544,7 @@ var AuthService = class {
     this.verifyWhitelist(userInfo, provider.whitelistFields);
     const sessionId = await this.sessionService.createSession(userInfo.email || userInfo.id, userAgent, clientIp, deviceId, providerName);
     const token = await this.generateSystemToken(userInfo, sessionId);
-    const deviceKey = await generateDeviceKey(userInfo.email || userInfo.id, this.env.JWT_SECRET || "");
+    const deviceKey = await generateAllDeviceKeys(this.env.OAUTH_ALLOWED_USERS, this.env.JWT_SECRET || "");
     const isEmergencyConfirmed = await this.emergencyRepository.isEmergencyConfirmed();
     const needsEmergency = !isEmergencyConfirmed;
     return {
@@ -38669,7 +38692,7 @@ var WebAuthnService = class {
         email: userEmail.includes("@") ? userEmail : void 0,
         provider: "passkey"
       }, sessionId);
-      const deviceKey = await generateDeviceKey(userEmail, this.env.JWT_SECRET || "");
+      const deviceKey = await generateAllDeviceKeys(this.env.OAUTH_ALLOWED_USERS, this.env.JWT_SECRET || "");
       const isEmergencyConfirmed = await this.emergencyRepository.isEmergencyConfirmed();
       const needsEmergency = !isEmergencyConfirmed;
       return {
@@ -46296,7 +46319,7 @@ var Web3WalletAuthService = class {
     this.verifyWhitelist(normalizedAddress);
     const sessionId = await this.sessionService.createSession(normalizedAddress, userAgent, clientIp, deviceId, "web3");
     const token = await this.generateSystemToken(normalizedAddress, sessionId);
-    const deviceKey = await generateDeviceKey(normalizedAddress, this.env.JWT_SECRET || "");
+    const deviceKey = await generateAllDeviceKeys(this.env.OAUTH_ALLOWED_USERS, this.env.JWT_SECRET || "");
     const isEmergencyConfirmed = await this.emergencyRepository.isEmergencyConfirmed();
     const needsEmergency = !isEmergencyConfirmed;
     return {
@@ -46484,12 +46507,14 @@ auth.get("/me", authMiddleware, async (c2) => {
   const isEmergencyConfirmed = await repository.isEmergencyConfirmed();
   const encryptionKey = !isEmergencyConfirmed ? c2.env.ENCRYPTION_KEY : void 0;
   const license = !isEmergencyConfirmed ? c2.env.NODEAUTH_LICENSE : void 0;
-  const { generateDeviceKey: generateDeviceKey3, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
-  const deviceKey = await generateDeviceKey3(user.email || user.id, c2.env.JWT_SECRET || "");
+  const { generateDeviceKey: generateDeviceKey6, generateAllDeviceKeys: generateAllDeviceKeys2, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
+  const deviceKey = await generateAllDeviceKeys2(c2.env.OAUTH_ALLOWED_USERS, c2.env.JWT_SECRET || "");
   const publicKey = c2.req.header("X-Public-Key");
   let finalDeviceKey = deviceKey;
   if (publicKey && deviceKey) {
-    finalDeviceKey = await encryptWithRSAPublicKey2(deviceKey, publicKey);
+    const chunks = deviceKey.match(/.{1,150}/g) || [];
+    const encryptedChunks = await Promise.all(chunks.map((chunk) => encryptWithRSAPublicKey2(chunk, publicKey)));
+    finalDeviceKey = encryptedChunks.join(".");
   }
   return c2.json({
     success: true,
