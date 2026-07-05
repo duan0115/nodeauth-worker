@@ -20,11 +20,13 @@ function getCommitHash() {
  * Platform Detection Logic (Embedded for standalone distribution compatibility)
  */
 const PLATFORM_REGISTRY = [
+    { name: 'Koyeb', suffix: 'koyeb', envKeys: ['KOYEB_APP_NAME', 'KOYEB_SERVICE_NAME'] },
+    { name: 'Northflank', suffix: 'northflank', envKeys: ['NF_HOSTS', 'NF_GIT_SHA'] },
     { name: 'Netlify', suffix: 'netlify', envKeys: ['NETLIFY', 'NETLIFY_SITE_ID'] },
     { name: 'Vercel', suffix: 'vercel', envKeys: ['VERCEL', 'VERCEL_PROJECT_ID'] },
-    { name: 'Docker', suffix: 'docker', envKeys: ['DOCKER_BUILD'] },
     { name: 'EdgeOne Pages', suffix: 'edgeone', envKeys: ['EDGEONE_PAGES_PROJECT_NAME'] },
     { name: 'Deno Deploy', suffix: 'deno', envKeys: ['DENO_DEPLOYMENT_ID', 'DENO_REGION'] },
+    { name: 'Docker', suffix: 'docker', envKeys: ['DOCKER_BUILD'] },
     { name: 'Cloudflare Workers', suffix: 'cloudflare', envKeys: [] },
 ];
 

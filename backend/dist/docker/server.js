@@ -64255,7 +64255,7 @@ auth.get("/me", authMiddleware, async (c) => {
   const isEmergencyConfirmed = await repository.isEmergencyConfirmed();
   const encryptionKey = !isEmergencyConfirmed ? c.env.ENCRYPTION_KEY : void 0;
   const license = !isEmergencyConfirmed ? c.env.NODEAUTH_LICENSE : void 0;
-  const { generateDeviceKey: generateDeviceKey6, generateAllDeviceKeys: generateAllDeviceKeys2, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
+  const { generateAllDeviceKeys: generateAllDeviceKeys2, encryptWithRSAPublicKey: encryptWithRSAPublicKey2 } = await Promise.resolve().then(() => (init_crypto(), crypto_exports));
   const deviceKey = await generateAllDeviceKeys2(c.env.OAUTH_ALLOWED_USERS, c.env.JWT_SECRET || "");
   const publicKey = c.req.header("X-Public-Key");
   let finalDeviceKey = deviceKey;
