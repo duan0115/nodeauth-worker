@@ -64533,7 +64533,14 @@ auth.get("/sessions", authMiddleware, async (c2) => {
   const service = getSessionService(c2);
   const clientIp = getClientIp(c2);
   if (currentSessionId) {
-    c2.executionCtx?.waitUntil?.(service.heartbeat(currentSessionId, clientIp));
+    const heartbeatPromise = service.heartbeat(currentSessionId, clientIp);
+    try {
+      if (c2.executionCtx && c2.executionCtx.waitUntil) {
+        c2.executionCtx.waitUntil(heartbeatPromise);
+      }
+    } catch (e2) {
+      heartbeatPromise.catch(console.error);
+    }
   }
   const sessions = await service.getUserSessions(user.email || user.id, currentSessionId);
   return c2.json({ success: true, sessions });
