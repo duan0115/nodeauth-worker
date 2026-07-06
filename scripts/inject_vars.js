@@ -20,24 +20,21 @@ function getCommitHash() {
  * Platform Detection Logic (Embedded for standalone distribution compatibility)
  */
 const PLATFORM_REGISTRY = [
-    { name: 'Koyeb', suffix: 'koyeb', envKeys: ['KOYEB_APP_NAME', 'KOYEB_SERVICE_NAME'] },
-    { name: 'Northflank', suffix: 'northflank', envKeys: ['NF_HOSTS', 'NF_GIT_SHA'] },
-    { name: 'Netlify', suffix: 'netlify', envKeys: ['NETLIFY', 'NETLIFY_SITE_ID'] },
-    { name: 'Vercel', suffix: 'vercel', envKeys: ['VERCEL', 'VERCEL_PROJECT_ID'] },
-    { name: 'EdgeOne Pages', suffix: 'edgeone', envKeys: ['EDGEONE_PAGES_PROJECT_NAME'] },
-    { name: 'Deno Deploy', suffix: 'deno', envKeys: ['DENO_DEPLOYMENT_ID', 'DENO_REGION'] },
-    { name: 'Docker', suffix: 'docker', envKeys: ['DOCKER_BUILD'] },
-    { name: 'Cloudflare Workers', suffix: 'cloudflare', envKeys: [] },
+    { name: 'Koyeb', suffix: 'koyeb', match: (env) => env.KOYEB_APP_NAME || env.KOYEB_SERVICE_NAME },
+    { name: 'Northflank', suffix: 'northflank', match: (env) => env.NF_HOSTS || env.NF_GIT_SHA },
+    { name: 'Netlify', suffix: 'netlify', match: (env) => env.NETLIFY || env.NETLIFY_SITE_ID },
+    { name: 'Vercel', suffix: 'vercel', match: (env) => env.VERCEL || env.VERCEL_PROJECT_ID },
+    { name: 'EdgeOne Pages', suffix: 'edgeone', match: (env) => env.EDGEONE_PAGES_PROJECT_NAME },
+    { name: 'Deno Deploy', suffix: 'deno', match: (env) => env.DENO_DEPLOYMENT_ID || env.DENO_REGION },
+    { name: 'Docker', suffix: 'docker', match: (env) => env.DOCKER_BUILD || fs.existsSync('/.dockerenv') },
+    { name: 'Cloudflare Workers', suffix: 'cloudflare', match: () => true }, // Fallback
 ];
 
 function detectPlatform(env = process.env) {
     const explicit = PLATFORM_REGISTRY.find(p => p.suffix === env.DEPLOY_PLATFORM);
     if (explicit) return explicit;
 
-    const fingerprinted = PLATFORM_REGISTRY.find(p => p.envKeys.some(k => !!env[k]));
-    if (fingerprinted) return fingerprinted;
-
-    return PLATFORM_REGISTRY.at(-1);
+    return PLATFORM_REGISTRY.find(p => p.match(env));
 }
 
 // Support --platform=<suffix> CLI arg as an override
@@ -49,10 +46,15 @@ if (platformArg) {
 const commitHash = getCommitHash();
 const platform = detectPlatform();
 
+const injectCommitOnly = process.argv.includes('--inject-commit-only');
+const injectPlatformOnly = process.argv.includes('--inject-platform-only');
+
 console.log(`💉 Injecting variables:`);
-console.log(`   - Commit: ${commitHash}`);
-console.log(`   - Platform: ${platform.name}`);
-console.log(`   - Icon Suffix: ${platform.suffix}`);
+if (!injectPlatformOnly) console.log(`   - Commit: ${commitHash}`);
+if (!injectCommitOnly) {
+    console.log(`   - Platform: ${platform.name}`);
+    console.log(`   - Icon Suffix: ${platform.suffix}`);
+}
 
 function replaceInDir(dir, replacements) {
     if (!fs.existsSync(dir)) {
@@ -106,11 +108,14 @@ const searchPaths = [
     path.join(rootDir, 'cloud-functions')
 ];
 
-const replacements = {
-    '__DIST_COMMIT_HASH__': commitHash,
-    '__DIST_PLATFORM__': platform.name,
-    '__DIST_ICON_SUFFIX__': platform.suffix
-};
+const replacements = {};
+if (!injectPlatformOnly) {
+    replacements['__DIST_COMMIT_HASH__'] = commitHash;
+}
+if (!injectCommitOnly) {
+    replacements['__DIST_PLATFORM__'] = platform.name;
+    replacements['__DIST_ICON_SUFFIX__'] = platform.suffix;
+}
 
 searchPaths.forEach(distPath => {
     console.log(`🔍 Scanning: ${path.relative(process.cwd(), distPath)}`);

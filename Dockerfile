@@ -59,6 +59,7 @@ COPY frontend/dist ./frontend/dist
 COPY backend/dist ./backend/dist
 COPY backend/package*.json ./backend/
 COPY backend/schema.sql ./
+COPY scripts/inject_vars.js ./scripts/inject_vars.js
 
 # Ensure correct ownership for non-root user
 RUN chown -R node:node /app
@@ -68,4 +69,4 @@ USER node
 EXPOSE 3000
 
 # Start command
-CMD ["node", "backend/dist/docker/server.js"]
+CMD node scripts/inject_vars.js --inject-platform-only && exec node backend/dist/docker/server.js

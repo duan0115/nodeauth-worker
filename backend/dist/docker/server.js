@@ -80383,6 +80383,12 @@ var D1HttpExecutor = class {
       return { rows: data.rows || [] };
     };
   }
+  getBatchProxyClient() {
+    return async (queries) => {
+      const data = await this.sendRequest({ batch: queries });
+      return data.results.map((r2) => ({ rows: r2.results || [] }));
+    };
+  }
 };
 
 // src/shared/db/factory.ts
@@ -80422,7 +80428,7 @@ var DbFactory = class {
         }
         logger.info(`[Database] Engine: Cloudflare D1 Proxy via ${proxyUrl}`);
         const executor2 = new D1HttpExecutor(proxyUrl, proxyToken);
-        const db2 = drizzle4(executor2.getProxyClient(), { schema: sqlite_exports });
+        const db2 = drizzle4(executor2.getProxyClient(), executor2.getBatchProxyClient(), { schema: sqlite_exports });
         return { executor: executor2, db: db2, schema: sqlite_exports };
       }
       case "sqlite":
