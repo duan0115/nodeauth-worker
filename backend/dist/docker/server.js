@@ -64549,12 +64549,19 @@ async function encryptField(data, key) {
   return JSON.stringify(encrypted);
 }
 async function decryptField(encryptedStr, key) {
+  let encryptedObj;
   try {
-    const encryptedObj = JSON.parse(encryptedStr);
-    return await decryptData(encryptedObj, key);
-  } catch (e2) {
-    logger.warn("Decryption failed for a database field (likely due to an ENCRYPTION_KEY change or corrupted data).");
-    return null;
+    encryptedObj = JSON.parse(encryptedStr);
+  } catch (parseErr) {
+    logger.warn("Decryption failed: invalid JSON structure in db field.");
+    return { success: false, reason: "PARSE_ERROR", error: parseErr };
+  }
+  try {
+    const data = await decryptData(encryptedObj, key);
+    return { success: true, data };
+  } catch (cryptoErr) {
+    logger.warn("Decryption failed: key mismatch or corrupted cipher.");
+    return { success: false, reason: "KEY_MISMATCH", error: cryptoErr };
   }
 }
 async function batchInsertVaultItems(dbClient, items, key, createdBy, startSortOrder = 0) {
@@ -64757,10 +64764,17 @@ var VaultService = class {
    */
   async getAllAccounts() {
     const items = await this.repository.findAll();
-    return await Promise.all(items.map(async (item) => ({
-      ...item,
-      secret: item.secret ? await decryptField(item.secret, this.encryptionKey) : item.secret
-    })));
+    return await Promise.all(items.map(async (item) => {
+      let secret = item.secret;
+      if (secret) {
+        const res = await decryptField(secret, this.encryptionKey);
+        secret = res.success ? res.data : null;
+      }
+      return {
+        ...item,
+        secret
+      };
+    }));
   }
   /**
    * 获取分页和搜索条件后的所有账户 (解密)
@@ -64775,9 +64789,10 @@ var VaultService = class {
       const { createdBy: _c, updatedBy: _u, ...rest } = item;
       let secret = null;
       if (item.secret) {
-        try {
-          secret = await decryptField(item.secret, this.encryptionKey);
-        } catch {
+        const res = await decryptField(item.secret, this.encryptionKey);
+        if (res.success) {
+          secret = res.data;
+        } else if (res.reason === "KEY_MISMATCH") {
           hasDecryptionError = true;
         }
       }
@@ -64913,15 +64928,18 @@ var VaultService = class {
     const { service: normService, account: normAccount, secret: newSecret, algorithm: normAlgo, digits: normDigits, period: normPeriod, type: normType, counter: normCounter, category: normCategory } = normalized;
     let encryptedSecret;
     if (data.secret !== void 0) {
-      let finalSecret = newSecret;
-      const isZeroKnowledge = finalSecret && finalSecret.startsWith("nodeauth:");
-      if (!finalSecret || !isZeroKnowledge && normType !== "steam" && !validateBase32Secret(finalSecret)) {
+      let finalSecret2 = newSecret;
+      const isZeroKnowledge = finalSecret2 && finalSecret2.startsWith("nodeauth:");
+      if (!finalSecret2 || !isZeroKnowledge && normType !== "steam" && !validateBase32Secret(finalSecret2)) {
         throw new AppError("invalid_secret_format", 400);
       }
-      encryptedSecret = await encryptField(finalSecret, this.encryptionKey);
+      encryptedSecret = await encryptField(finalSecret2, this.encryptionKey);
     } else {
-      if (existing.secret && await decryptField(existing.secret, this.encryptionKey) === null) {
-        throw new AppError("cannot_update_decryption_failed_record", 400);
+      if (existing.secret) {
+        const res = await decryptField(existing.secret, this.encryptionKey);
+        if (!res.success) {
+          throw new AppError("cannot_update_decryption_failed_record", 400);
+        }
       }
       encryptedSecret = existing.secret;
     }
@@ -64947,10 +64965,15 @@ var VaultService = class {
       }
     }
     const { createdBy: _c, updatedBy: _u, ...restExisting } = existing;
+    let finalSecret = newSecret;
+    if (!finalSecret && encryptedSecret) {
+      const res = await decryptField(encryptedSecret, this.encryptionKey);
+      finalSecret = res.success ? res.data : null;
+    }
     return {
       ...restExisting,
       ...updatedItem,
-      secret: newSecret || await decryptField(encryptedSecret, this.encryptionKey)
+      secret: finalSecret
     };
   }
   /**
@@ -65289,10 +65312,14 @@ var TrashService = class {
    */
   async getTrashList() {
     const items = await this.repository.findDeleted();
-    return Promise.all(items.map(async (item) => ({
-      ...item,
-      secret: this.encryptionKey ? await decryptField(item.secret, this.encryptionKey) || "" : ""
-    })));
+    return Promise.all(items.map(async (item) => {
+      let secret = "";
+      if (this.encryptionKey && item.secret) {
+        const res = await decryptField(item.secret, this.encryptionKey);
+        secret = res.success ? res.data : "";
+      }
+      return { ...item, secret };
+    }));
   }
   /**
    * TRASH: 1.6 & 1.7 强制沉淀置顶恢复 (Restore Strategy B)
@@ -68191,17 +68218,19 @@ function gte2(i2, y) {
 }
 function expand_(str, max, isTop) {
   const expansions = [];
-  const m2 = balanced("{", "}", str);
-  if (!m2)
-    return [str];
-  const pre = m2.pre;
-  const post = m2.post.length ? expand_(m2.post, max, false) : [""];
-  if (/\$$/.test(m2.pre)) {
-    for (let k = 0; k < post.length && k < max; k++) {
-      const expansion = pre + "{" + m2.body + "}" + post[k];
-      expansions.push(expansion);
+  for (; ; ) {
+    const m2 = balanced("{", "}", str);
+    if (!m2)
+      return [str];
+    const pre = m2.pre;
+    if (/\$$/.test(m2.pre)) {
+      const post2 = m2.post.length ? expand_(m2.post, max, false) : [""];
+      for (let k = 0; k < post2.length && k < max; k++) {
+        const expansion = pre + "{" + m2.body + "}" + post2[k];
+        expansions.push(expansion);
+      }
+      return expansions;
     }
-  } else {
     const isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m2.body);
     const isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m2.body);
     const isSequence = isNumericSequence || isAlphaSequence;
@@ -68209,10 +68238,12 @@ function expand_(str, max, isTop) {
     if (!isSequence && !isOptions) {
       if (m2.post.match(/,(?!,).*\}/)) {
         str = m2.pre + "{" + m2.body + escClose + m2.post;
-        return expand_(str, max, true);
+        isTop = true;
+        continue;
       }
       return [str];
     }
+    const post = m2.post.length ? expand_(m2.post, max, false) : [""];
     let n;
     if (isSequence) {
       n = m2.body.split(/\.\./);
@@ -68276,8 +68307,8 @@ function expand_(str, max, isTop) {
         }
       }
     }
+    return expansions;
   }
-  return expansions;
 }
 
 // node_modules/minimatch/dist/esm/assert-valid-pattern.js
@@ -77255,8 +77286,9 @@ var BackupService = class {
   async generateEncryptedPayload(key, backupPassword) {
     const vaultResults = await this.db.select().from(vault4);
     const accounts = (await Promise.all(vaultResults.map(async (row) => {
-      const secret = await decryptField(row.secret, key);
-      if (!secret) return null;
+      const res = await decryptField(row.secret, key);
+      if (!res.success) return null;
+      const secret = res.data;
       return {
         service: row.service,
         account: row.account,
@@ -78949,7 +78981,7 @@ function transformSqlForDialect(sql2, engine2) {
   if (engine2 === "mysql") {
     res = res.replace(/\bINTEGER PRIMARY KEY AUTOINCREMENT\b/gi, "BIGINT AUTO_INCREMENT PRIMARY KEY");
     res = res.replace(/\bINTEGER\b/gi, "BIGINT");
-    res = res.replace(/\bkey TEXT PRIMARY KEY\b/gi, "`key` VARCHAR(255) PRIMARY KEY");
+    res = res.replace(/`?key`? TEXT PRIMARY KEY\b/gi, "`key` VARCHAR(255) PRIMARY KEY");
     res = res.replace(/\bTEXT PRIMARY KEY\b/gi, "VARCHAR(255) PRIMARY KEY");
     res = res.replace(/\bTEXT\s+DEFAULT\b/gi, "VARCHAR(255) DEFAULT");
     res = res.replace(/\bBLOB\b/gi, "LONGBLOB");
@@ -80396,6 +80428,38 @@ import fs2 from "fs";
 import path4 from "path";
 var DbFactory = class {
   static async create() {
+    if (process.env.DATABASE_URL) {
+      try {
+        const parsed = new URL(process.env.DATABASE_URL);
+        if (!process.env.DB_ENGINE) {
+          const proto = parsed.protocol.replace(":", "");
+          if (proto === "postgres" || proto === "postgresql") process.env.DB_ENGINE = "postgres";
+          else if (proto === "mysql") process.env.DB_ENGINE = "mysql";
+        }
+        process.env.DB_HOST = process.env.DB_HOST || parsed.hostname;
+        process.env.DB_PORT = process.env.DB_PORT || parsed.port;
+        process.env.DB_USER = process.env.DB_USER || decodeURIComponent(parsed.username);
+        process.env.DB_PASSWORD = process.env.DB_PASSWORD || decodeURIComponent(parsed.password);
+        const dbName = parsed.pathname.replace(/^\//, "");
+        if (dbName) {
+          process.env.DB_NAME = process.env.DB_NAME || dbName;
+        } else {
+          if (process.env.DB_ENGINE === "postgres") {
+            process.env.DB_NAME = process.env.DB_NAME || "postgres";
+          }
+        }
+        if (process.env.DB_SSL === void 0) {
+          const sslParam = parsed.searchParams.get("ssl") || parsed.searchParams.get("sslmode");
+          const isDomain = (host, domain) => host === domain || host.endsWith("." + domain);
+          const isCloudDb = isDomain(parsed.hostname, "tidbcloud.com") || isDomain(parsed.hostname, "neon.tech") || isDomain(parsed.hostname, "supabase.co") || isDomain(parsed.hostname, "db.prisma.io");
+          if (isCloudDb || sslParam === "true" || sslParam === "require" || sslParam === "verify-full") {
+            process.env.DB_SSL = "true";
+          }
+        }
+      } catch (e2) {
+        logger.error(`[Database] Failed to parse DATABASE_URL:`, e2);
+      }
+    }
     const engine2 = (process.env.DB_ENGINE || "sqlite").toLowerCase();
     const baseDir2 = process.cwd();
     switch (engine2) {

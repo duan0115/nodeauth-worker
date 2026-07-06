@@ -25,8 +25,23 @@ const PLATFORM_REGISTRY = [
     { name: 'Netlify', suffix: 'netlify', match: (env) => env.NETLIFY || env.NETLIFY_SITE_ID },
     { name: 'Vercel', suffix: 'vercel', match: (env) => env.VERCEL || env.VERCEL_PROJECT_ID },
     { name: 'EdgeOne Pages', suffix: 'edgeone', match: (env) => env.EDGEONE_PAGES_PROJECT_NAME },
+    { name: 'Aliyun ESA', suffix: 'esa', match: (env) => env.ALIYUN_ESA },
     { name: 'Deno Deploy', suffix: 'deno', match: (env) => env.DENO_DEPLOYMENT_ID || env.DENO_REGION },
-    { name: 'Docker', suffix: 'docker', match: (env) => env.DOCKER_BUILD || fs.existsSync('/.dockerenv') },
+    {
+        name: 'Docker', suffix: 'docker', match: (env) => {
+            if (env.DOCKER_BUILD || env.KUBERNETES_SERVICE_HOST) return true;
+            if (fs.existsSync('/.dockerenv') || fs.existsSync('/run/.containerenv')) return true;
+            try {
+                const cgroup = fs.readFileSync('/proc/self/cgroup', 'utf8');
+                if (cgroup.includes('docker') || cgroup.includes('containerd') || cgroup.includes('kubepods') || cgroup.includes('lxc')) return true;
+            } catch (e) { }
+            try {
+                const mountinfo = fs.readFileSync('/proc/self/mountinfo', 'utf8');
+                if (mountinfo.includes('/docker/containers/') || mountinfo.includes('kubelet') || mountinfo.includes('containerd')) return true;
+            } catch (e) { }
+            return false;
+        }
+    },
     { name: 'Cloudflare Workers', suffix: 'cloudflare', match: () => true }, // Fallback
 ];
 
@@ -57,12 +72,15 @@ if (!injectCommitOnly) {
 }
 
 function replaceInDir(dir, replacements) {
-    if (!fs.existsSync(dir)) {
-        console.warn(`⚠️ Directory not found: ${dir}`);
+    let entries;
+    try {
+        entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            console.warn(`⚠️ Directory access error (${dir}): ${err.message}`);
+        }
         return;
     }
-
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
     entries.forEach(entry => {
         const entryName = entry.name;
@@ -121,5 +139,26 @@ searchPaths.forEach(distPath => {
     console.log(`🔍 Scanning: ${path.relative(process.cwd(), distPath)}`);
     replaceInDir(distPath, replacements);
 });
+
+if (platform.suffix === 'esa') {
+    const safeEnv = {};
+    for (const key of Object.keys(process.env)) {
+        if (key.match(/^(OAUTH_|DB_|DATABASE_|JWT_|ENCRYPTION_|NODEAUTH_|CRON_|D1_)/)) {
+            safeEnv[key] = process.env[key];
+        }
+    }
+
+    const esaEntryPath = path.join(rootDir, 'backend/dist/esa/index.js');
+    try {
+        const originalContent = fs.readFileSync(esaEntryPath, 'utf8');
+        const injectedContent = `globalThis.process = { env: ${JSON.stringify(safeEnv)} };\n` + originalContent;
+        fs.writeFileSync(esaEntryPath, injectedContent, 'utf8');
+        console.log(`   💉 Injected ESA runtime environment variables into backend/dist/esa/index.js`);
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            console.warn(`⚠️ Failed to inject ESA variables into ${esaEntryPath}: ${err.message}`);
+        }
+    }
+}
 
 console.log('✨ All variables injected successfully.');

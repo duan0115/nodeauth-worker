@@ -46801,12 +46801,19 @@ async function encryptField(data, key) {
   return JSON.stringify(encrypted);
 }
 async function decryptField(encryptedStr, key) {
+  let encryptedObj;
   try {
-    const encryptedObj = JSON.parse(encryptedStr);
-    return await decryptData(encryptedObj, key);
-  } catch (e2) {
-    logger2.warn("Decryption failed for a database field (likely due to an ENCRYPTION_KEY change or corrupted data).");
-    return null;
+    encryptedObj = JSON.parse(encryptedStr);
+  } catch (parseErr) {
+    logger2.warn("Decryption failed: invalid JSON structure in db field.");
+    return { success: false, reason: "PARSE_ERROR", error: parseErr };
+  }
+  try {
+    const data = await decryptData(encryptedObj, key);
+    return { success: true, data };
+  } catch (cryptoErr) {
+    logger2.warn("Decryption failed: key mismatch or corrupted cipher.");
+    return { success: false, reason: "KEY_MISMATCH", error: cryptoErr };
   }
 }
 async function batchInsertVaultItems(dbClient, items, key, createdBy, startSortOrder = 0) {
@@ -47009,10 +47016,17 @@ var VaultService = class {
    */
   async getAllAccounts() {
     const items = await this.repository.findAll();
-    return await Promise.all(items.map(async (item) => ({
-      ...item,
-      secret: item.secret ? await decryptField(item.secret, this.encryptionKey) : item.secret
-    })));
+    return await Promise.all(items.map(async (item) => {
+      let secret = item.secret;
+      if (secret) {
+        const res = await decryptField(secret, this.encryptionKey);
+        secret = res.success ? res.data : null;
+      }
+      return {
+        ...item,
+        secret
+      };
+    }));
   }
   /**
    * 获取分页和搜索条件后的所有账户 (解密)
@@ -47027,9 +47041,10 @@ var VaultService = class {
       const { createdBy: _c, updatedBy: _u, ...rest } = item;
       let secret = null;
       if (item.secret) {
-        try {
-          secret = await decryptField(item.secret, this.encryptionKey);
-        } catch {
+        const res = await decryptField(item.secret, this.encryptionKey);
+        if (res.success) {
+          secret = res.data;
+        } else if (res.reason === "KEY_MISMATCH") {
           hasDecryptionError = true;
         }
       }
@@ -47165,15 +47180,18 @@ var VaultService = class {
     const { service: normService, account: normAccount, secret: newSecret, algorithm: normAlgo, digits: normDigits, period: normPeriod, type: normType, counter: normCounter, category: normCategory } = normalized;
     let encryptedSecret;
     if (data.secret !== void 0) {
-      let finalSecret = newSecret;
-      const isZeroKnowledge = finalSecret && finalSecret.startsWith("nodeauth:");
-      if (!finalSecret || !isZeroKnowledge && normType !== "steam" && !validateBase32Secret(finalSecret)) {
+      let finalSecret2 = newSecret;
+      const isZeroKnowledge = finalSecret2 && finalSecret2.startsWith("nodeauth:");
+      if (!finalSecret2 || !isZeroKnowledge && normType !== "steam" && !validateBase32Secret(finalSecret2)) {
         throw new AppError("invalid_secret_format", 400);
       }
-      encryptedSecret = await encryptField(finalSecret, this.encryptionKey);
+      encryptedSecret = await encryptField(finalSecret2, this.encryptionKey);
     } else {
-      if (existing.secret && await decryptField(existing.secret, this.encryptionKey) === null) {
-        throw new AppError("cannot_update_decryption_failed_record", 400);
+      if (existing.secret) {
+        const res = await decryptField(existing.secret, this.encryptionKey);
+        if (!res.success) {
+          throw new AppError("cannot_update_decryption_failed_record", 400);
+        }
       }
       encryptedSecret = existing.secret;
     }
@@ -47199,10 +47217,15 @@ var VaultService = class {
       }
     }
     const { createdBy: _c, updatedBy: _u, ...restExisting } = existing;
+    let finalSecret = newSecret;
+    if (!finalSecret && encryptedSecret) {
+      const res = await decryptField(encryptedSecret, this.encryptionKey);
+      finalSecret = res.success ? res.data : null;
+    }
     return {
       ...restExisting,
       ...updatedItem,
-      secret: newSecret || await decryptField(encryptedSecret, this.encryptionKey)
+      secret: finalSecret
     };
   }
   /**
@@ -47541,10 +47564,14 @@ var TrashService = class {
    */
   async getTrashList() {
     const items = await this.repository.findDeleted();
-    return Promise.all(items.map(async (item) => ({
-      ...item,
-      secret: this.encryptionKey ? await decryptField(item.secret, this.encryptionKey) || "" : ""
-    })));
+    return Promise.all(items.map(async (item) => {
+      let secret = "";
+      if (this.encryptionKey && item.secret) {
+        const res = await decryptField(item.secret, this.encryptionKey);
+        secret = res.success ? res.data : "";
+      }
+      return { ...item, secret };
+    }));
   }
   /**
    * TRASH: 1.6 & 1.7 强制沉淀置顶恢复 (Restore Strategy B)
@@ -56988,8 +57015,9 @@ var BackupService = class {
   async generateEncryptedPayload(key, backupPassword) {
     const vaultResults = await this.db.select().from(vault4);
     const accounts = (await Promise.all(vaultResults.map(async (row) => {
-      const secret = await decryptField(row.secret, key);
-      if (!secret) return null;
+      const res = await decryptField(row.secret, key);
+      if (!res.success) return null;
+      const secret = res.data;
       return {
         service: row.service,
         account: row.account,
@@ -58678,7 +58706,7 @@ function transformSqlForDialect(sql2, engine2) {
   if (engine2 === "mysql") {
     res = res.replace(/\bINTEGER PRIMARY KEY AUTOINCREMENT\b/gi, "BIGINT AUTO_INCREMENT PRIMARY KEY");
     res = res.replace(/\bINTEGER\b/gi, "BIGINT");
-    res = res.replace(/\bkey TEXT PRIMARY KEY\b/gi, "`key` VARCHAR(255) PRIMARY KEY");
+    res = res.replace(/`?key`? TEXT PRIMARY KEY\b/gi, "`key` VARCHAR(255) PRIMARY KEY");
     res = res.replace(/\bTEXT PRIMARY KEY\b/gi, "VARCHAR(255) PRIMARY KEY");
     res = res.replace(/\bTEXT\s+DEFAULT\b/gi, "VARCHAR(255) DEFAULT");
     res = res.replace(/\bBLOB\b/gi, "LONGBLOB");
