@@ -27,6 +27,7 @@ const PLATFORM_REGISTRY = [
     { name: 'EdgeOne Pages', suffix: 'edgeone', match: (env) => env.EDGEONE_PAGES_PROJECT_NAME },
     { name: 'Aliyun ESA', suffix: 'esa', match: (env) => env.ALIYUN_ESA },
     { name: 'Deno Deploy', suffix: 'deno', match: (env) => env.DENO_DEPLOYMENT_ID || env.DENO_REGION },
+    { name: 'Wasmer Edge', suffix: 'wasmer', match: (env) => env.WASMER_TOKEN },
     { name: 'Docker', suffix: 'docker', match: (env) => env.DOCKER_BUILD || env.KUBERNETES_SERVICE_HOST },
     { name: 'Cloudflare Workers', suffix: 'cloudflare', match: () => true }, // Fallback
 ];
