@@ -80606,30 +80606,6 @@ vault5.post("/import/blizzard-net", rateLimit({
     return c.json({ success: false, error: e2.message }, e2.statusCode || 500);
   }
 });
-vault5.post("/add-from-uri", async (c) => {
-  const user = c.get("user");
-  const { uri, category } = await c.req.json();
-  if (!uri || typeof uri !== "string") {
-    return c.json({ success: false, error: "URI is required" }, 400);
-  }
-  const parsed = parseOTPAuthURI(uri);
-  if (!parsed) {
-    return c.json({ success: false, error: "\u65E0\u6548\u7684 OTP URI \u683C\u5F0F" }, 400);
-  }
-  const service = getService2(c);
-  const item = await service.createAccount(user.email || user.id, {
-    service: parsed.issuer,
-    account: parsed.account,
-    secret: parsed.secret,
-    algorithm: parsed.algorithm,
-    digits: parsed.digits,
-    period: parsed.period,
-    type: parsed.type,
-    counter: parsed.counter,
-    category: category || "\u624B\u673A\u626B\u7801"
-  });
-  return c.json({ success: true, item });
-});
 vault5.post("/sync", async (c) => {
   const user = c.get("user");
   const { actions } = await c.req.json();
